@@ -1,0 +1,132 @@
+version: '3.8'
+
+services:
+  # ============================================================================
+  # PostgreSQL - Base de datos compartida
+  # ============================================================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres-prod
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+  # ============================================================================
+  # Redis - Caché y queue
+  # ============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: redis-prod
+    ports:
+      - "6379:6379"
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+  # ============================================================================
+  # FOLIAR - Generador de documentos (Flask)
+  # ============================================================================
+  foliar:
+    build:
+      context: ./foliar
+      dockerfile: Dockerfile
+    container_name: foliar-prod
+    ports:
+      - "5001:5000"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - FLASK_SECRET_KEY=${FLASK_SECRET_KEY}
+      - DATABASE_URL=postgresql://admin:${DB_PASSWORD}@postgres:5432/foliar
+      - FLASK_ENV=production
+      - FOLIAR_ENV=production
+    volumes:
+      - ./foliar/instance:/app/instance
+      - ./foliar/uploads:/app/uploads
+      - ./foliar/generated:/app/generated
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: always
+    networks:
+      - app-network
+
+  # ============================================================================
+  # MAESTRO - Agente de organización (FastAPI)
+  # ============================================================================
+  maestro:
+    build:
+      context: ./maestro
+      dockerfile: Dockerfile
+    container_name: maestro-prod
+    ports:
+      - "8000:8000"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+      - DATABASE_URL=postgresql://admin:${DB_PASSWORD}@postgres:5432/maestro
+      - REDIS_URL=redis://redis:6379/0
+      - ENVIRONMENT=production
+      - IS_PRODUCTION=true
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:5173,https://tudominio.com
+    volumes:
+      - ./maestro/uploads:/app/uploads
+      - ./maestro/logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: always
+    networks:
+      - app-network
+
+  # ============================================================================
+  # Nginx - Reverse proxy
+  # ============================================================================
+  nginx:
+    image: nginx:alpine
+    container_name: nginx-prod
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - foliar
+      - maestro
+    restart: always
+    networks:
+      - app-network
+
+# ============================================================================
+# Volúmenes
+# ============================================================================
+volumes:
+  postgres_data:
+    driver: local
+
+# ============================================================================
+# Networks
+# ============================================================================
+networks:
+  app-network:
+    driver: bridge
