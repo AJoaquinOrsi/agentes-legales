@@ -63,7 +63,7 @@ services:
       dockerfile: ./Dockerfile
     container_name: maestro-prod
     ports:
-      - "8002:8000"
+      - "8003:8000"
     environment:
       - ANTHROPIC_API_KEY=sk-ant-placeholder
       - JWT_SECRET=997190c7d5657240e0e4bcaf3d9ccb1eead20c850b61debbf826b729ee286ad
