@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Calibrador – Telegrama</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;font-size:12px;background:#f0f4f8;display:flex;gap:0}
+/* Panel izquierdo */
+#panel{width:320px;min-width:320px;background:#fff;border-right:1px solid #ddd;height:100vh;overflow-y:auto;padding:12px}
+#panel h2{font-size:13px;font-weight:700;color:#1b6ca8;margin-bottom:10px}
+.grupo{margin-bottom:14px;background:#f5f9ff;border-radius:6px;padding:8px}
+.grupo h3{font-size:11px;font-weight:700;color:#1b6ca8;margin-bottom:6px;text-transform:uppercase}
+.ctrl{margin-bottom:5px;display:flex;align-items:center;gap:6px}
+.ctrl label{width:80px;font-size:10px;color:#555;flex-shrink:0}
+.ctrl input[type=range]{flex:1}
+.ctrl span{width:36px;font-size:10px;font-weight:700;color:#1b6ca8;text-align:right}
+.btn-copy{width:100%;margin-top:10px;background:#1b6ca8;color:#fff;border:none;border-radius:6px;padding:8px;cursor:pointer;font-size:12px;font-weight:700}
+.btn-copy:active{opacity:.8}
+#output{margin-top:8px;background:#f0f4f8;border-radius:4px;padding:6px;font-size:9px;font-family:monospace;white-space:pre-wrap;color:#333;max-height:120px;overflow-y:auto}
+/* Preview */
+#preview{flex:1;overflow:auto;padding:12px}
+.tele-wrap{position:relative;max-width:860px;margin:0 auto}
+.tele-wrap img{width:100%;display:block}
+.tele-overlay{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}
+.tc{position:absolute;font-family:Arial,sans-serif;color:#c00;pointer-events:none;white-space:nowrap}
+.tc.wrap{white-space:pre-wrap;word-break:break-word;text-align:justify}
+.dot{position:absolute;border-radius:50%;background:#c00;pointer-events:none}
+</style>
+</head>
+<body>
+
+<div id="panel">
+  <h2>🎯 Calibrador de posiciones</h2>
+  <p style="font-size:10px;color:#888;margin-bottom:10px">Mové los sliders hasta que el texto quede sobre las líneas. El texto aparece en rojo para verlo mejor.</p>
+
+  <div class="grupo">
+    <h3>Destinatario — Nombre</h3>
+    <div class="ctrl"><label>Top %</label><input type="range" min="5" max="35" step="0.1" value="12.8" id="dn_top" oninput="render()"><span id="dn_top_v">12.8</span></div>
+    <div class="ctrl"><label>Left %</label><input type="range" min="0" max="50" step="0.1" value="2.5" id="dn_left" oninput="render()"><span id="dn_left_v">2.5</span></div>
+  </div>
+
+  <div class="grupo">
+    <h3>Destinatario — Ramo</h3>
+    <div class="ctrl"><label>Top %</label><input type="range" min="5" max="35" step="0.1" value="16.6" id="dr_top" oninput="render()"><span id="dr_top_v">16.6</span></div>
+  </div>
+
+  <div class="grupo">
+    <h3>Destinatario — Domicilio / CP</h3>
+    <div class="ctrl"><label>Top %</label><input type="range" min="5" max="35" step="0.1" value="20.2" id="dd_top" oninput="render()"><span id="dd_top_v">20.2</span></div>
+    <div class="ctrl"><label>CP Left %</label><input type="range" min="25" max="50" step="0.1" value="33" id="dc_left" oninput="render()"><span id="dc_left_v">33</span></div>
+  </div>
+
+  <div class="grupo">
+    <h3>Destinatario — Localidad / Provincia</h3>
+    <div class="ctrl"><label>Top %</label><input type="range" min="5" max="40" step="0.1" value="23.8" id="dl_top" oninput="render()"><span id="dl_top_v">23.8</span></div>
+    <div class="ctrl"><label>Prov Left %</label><input type="range" min="15" max="45" step="0.1" value="25" id="dp_left" oninput="render()"><span id="dp_left_v">25</span></div>
+  </div>
+
+  <div class="grupo">
+    <h3>Remitente — Nombre</h3>
+    <div class="ctrl"><label>Top %</label><input type="range" min="5" max="35" step="0.1" value="12.8" id="rn_top" oninput="render()"><span id="rn_top_v">12.8</span></div>
+    <div class="ctrl"><label>Left %</label><input type="range" min="45" max="60" step="0.1" value="50" id="rn_left" oninput="render()"><span id="rn_left_v">50</span></div>
+  </div>
+
+  <div class="grupo">
+    <h3>Remitente — DNI / Fecha</h3>
+    <div class="ctrl"><label>Top %</label><input type="range" min="5" max="35" step="0.1" value="16.6" id="ri_top" oninput="render()"><span id="ri_top_v">16.6</span></div>
+    <div class="ctrl"><label>Fecha Left %</label><input type="range" min="70" max="95" step="0.1" value="79" id="rf_left" oninput="render()"><span id="rf_left_v">79</span></div>
+  </div>
+
+  <div class="grupo">
+    <h3>Remitente — Domicilio / CP</h3>
+    <div class="ctrl"><label>Top %</label><input type="range" min="5" max="35" step="0.1" value="20.2" id="rd_top" oninput="render()"><span id="rd_top_v">20.2</span></div>
+    <div class="ctrl"><label>CP Left %</label><input type="range" min="75" max="95" step="0.1" value="81" id="rc_left" oninput="render()"><span id="rc_left_v">81</span></div>
+  </div>
+
+  <div class="grupo">
+    <h3>Remitente — Localidad / Provincia</h3>
+    <div class="ctrl"><label>Top %</label><input type="range" min="5" max="40" step="0.1" value="23.8" id="rl_top" oninput="render()"><span id="rl_top_v">23.8</span></div>
+    <div class="ctrl"><label>Prov Left %</label><input type="range" min="65" max="90" step="0.1" value="73" id="rp_left" oninput="render()"><span id="rp_left_v">73</span></div>
+  </div>
+
+  <div class="grupo">
+    <h3>Cuerpo del telegrama</h3>
+    <div class="ctrl"><label>Top %</label><input type="range" min="25" max="45" step="0.1" value="29.5" id="cu_top" oninput="render()"><span id="cu_top_v">29.5</span></div>
+    <div class="ctrl"><label>Left %</label><input type="range" min="0" max="10" step="0.1" value="2.8" id="cu_left" oninput="render()"><span id="cu_left_v">2.8</span></div>
+    <div class="ctrl"><label>Width %</label><input type="range" min="50" max="98" step="0.1" value="94" id="cu_width" oninput="render()"><span id="cu_width_v">94</span></div>
+    <div class="ctrl"><label>Max altura %</label><input type="range" min="20" max="60" step="0.1" value="55" id="cu_maxh" oninput="render()"><span id="cu_maxh_v">55</span></div>
+  </div>
+
+  <div class="grupo">
+    <h3>Círculo Tipo 1 / 2 / 3</h3>
+    <div class="ctrl"><label>Top %</label><input type="range" min="82" max="94" step="0.1" value="87.8" id="t3_top" oninput="render()"><span id="t3_top_v">87.8</span></div>
+    <div class="ctrl"><label>T1 Left %</label><input type="range" min="0" max="20" step="0.1" value="4.0" id="t1_left" oninput="render()"><span id="t1_left_v">4.0</span></div>
+    <div class="ctrl"><label>T2 Left %</label><input type="range" min="25" max="55" step="0.1" value="34.5" id="t2_left" oninput="render()"><span id="t2_left_v">34.5</span></div>
+    <div class="ctrl"><label>T3 Left %</label><input type="range" min="55" max="95" step="0.1" value="68.5" id="t3_left" oninput="render()"><span id="t3_left_v">68.5</span></div>
+  </div>
+
+  <button class="btn-copy" onclick="copiarCodigo()">📋 Copiar coordenadas para el código</button>
+  <div id="output"></div>
+</div>
+
+<div id="preview">
+  <div class="tele-wrap" id="wrap">
+    <img src="/telegrama_fondo.png" id="img" onload="render()">
+    <div class="tele-overlay" id="overlay"></div>
+  </div>
+</div>
+
+<script>
+const DATOS={
+  dn:"Provincia Aseguradora de Riesgos del Trabajo S.A.",
+  dr:"Aseguradora de riesgos del trabajo",
+  dd:"PELLEGRINI CARLOS 0091 05 °P", dc:"1009",
+  dl:"CABA", dp:"CABA",
+  rn:"CANTEROS Y QUIROZ ANA LIDIA",
+  ri:"18.223.458", rf:"30/05/2025",
+  rd:"Lavalle 1675 Piso 7 of 8", rc:"1048",
+  rl:"Capital Federal", rp:"C.A.B.A.",
+  cu:"Me dirijo a ustedes a fin de ampliar la denuncia oportunamente presentada con motivo del accidente de trabajo ocurrido el día 30 de mayo de 2025.\n\nComo consecuencia del hecho sufri un esguince de tobillo derecho, inestabilidad crónica, dolor al caminar, limitación funcional, afectacion psicologica.\n\nSolicito se tenga por ampliada la denuncia inicial, se reconozcan la totalidad de las secuelas físicas. Sin otro particular, saludo atentamente."
+};
+
+function v(id){return parseFloat(document.getElementById(id).value)}
+function upd(id){document.getElementById(id+"_v").textContent=parseFloat(document.getElementById(id).value).toFixed(1)}
+
+function render(){
+  ["dn_top","dn_left","dr_top","dd_top","dc_left","dl_top","dp_left",
+   "rn_top","rn_left","ri_top","rf_left","rd_top","rc_left","rl_top","rp_left",
+   "cu_top","cu_left","cu_width","cu_maxh","t3_top","t1_left","t2_left","t3_left"].forEach(upd);
+
+  const overlay=document.getElementById("overlay");
+  const img=document.getElementById("img");
+  overlay.innerHTML="";
+  const W=img.offsetWidth||860;
+
+  function add(text,top,left,width,wrap,maxh){
+    if(!text)return;
+    const d=document.createElement("div");
+    d.className="tc"+(wrap?" wrap":"");
+    d.style.cssText=`top:${top}%;left:${left}%;width:${width}%;font-size:${W*0.014}px;${maxh?`max-height:${maxh}%;overflow:hidden;`:""}`;
+    d.textContent=text;
+    overlay.appendChild(d);
+  }
+  function dot(top,left){
+    const d=document.createElement("div");
+    const sz=W*0.013;
+    d.className="dot";
+    d.style.cssText=`top:${top}%;left:${left}%;width:${sz}px;height:${sz}px;`;
+    overlay.appendChild(d);
+  }
+
+  add(DATOS.dn, v("dn_top"), v("dn_left"), 43);
+  add(DATOS.dr, v("dr_top"), v("dn_left"), 43);
+  add(DATOS.dd, v("dd_top"), v("dn_left"), 28);
+  add(DATOS.dc, v("dd_top"), v("dc_left"), 11);
+  add(DATOS.dl, v("dl_top"), v("dn_left"), 20);
+  add(DATOS.dp, v("dl_top"), v("dp_left"), 18);
+
+  add(DATOS.rn, v("rn_top"), v("rn_left"), 46);
+  add(DATOS.ri, v("ri_top"), v("rn_left"), 22);
+  add(DATOS.rf, v("ri_top"), v("rf_left"), 18);
+  add(DATOS.rd, v("rd_top"), v("rn_left"), 28);
+  add(DATOS.rc, v("rd_top"), v("rc_left"), 16);
+  add(DATOS.rl, v("rl_top"), v("rn_left"), 20);
+  add(DATOS.rp, v("rl_top"), v("rp_left"), 24);
+
+  add(DATOS.cu, v("cu_top"), v("cu_left"), v("cu_width"), true, v("cu_maxh"));
+  dot(v("t3_top"), v("t1_left"));
+  dot(v("t3_top"), v("t2_left"));
+  dot(v("t3_top"), v("t3_left"));
+}
+
+function copiarCodigo(){
+  const c=`  // DESTINATARIO
+  addText(dn,  ${v("dn_top")}, ${v("dn_left")}, 43);
+  addText(dr,  ${v("dr_top")}, ${v("dn_left")}, 43);
+  addText(dd,  ${v("dd_top")}, ${v("dn_left")}, 28);
+  addText(dc,  ${v("dd_top")}, ${v("dc_left")}, 11);
+  addText(dl,  ${v("dl_top")}, ${v("dn_left")}, 20);
+  addText(dp,  ${v("dl_top")}, ${v("dp_left")}, 18);
+
+  // REMITENTE
+  addText(rn,  ${v("rn_top")}, ${v("rn_left")}, 46);
+  addText(ri,  ${v("ri_top")}, ${v("rn_left")}, 22);
+  addText(fechaFmt, ${v("ri_top")}, ${v("rf_left")}, 18);
+  addText(rd,  ${v("rd_top")}, ${v("rn_left")}, 28);
+  addText(rc,  ${v("rd_top")}, ${v("rc_left")}, 16);
+  addText(rl,  ${v("rl_top")}, ${v("rn_left")}, 20);
+  addText(rp,  ${v("rl_top")}, ${v("rp_left")}, 24);
+
+  // CUERPO
+  addText(cu, ${v("cu_top")}, ${v("cu_left")}, ${v("cu_width")}, true, ${v("cu_maxh")});
+
+  // CÍRCULO TIPO
+  const tipo=document.querySelector("input[name='tipo']:checked")?.value||"3";
+  const tipoPos={"1":[${v("t3_top")},${v("t1_left")}],"2":[${v("t3_top")},${v("t2_left")}],"3":[${v("t3_top")},${v("t3_left")}]};
+  if(tipoPos[tipo])addDot(tipoPos[tipo][0],tipoPos[tipo][1]);`;
+
+  navigator.clipboard.writeText(c).catch(()=>{});
+  document.getElementById("output").textContent=c;
+}
+
+window.addEventListener("resize",render);
+</script>
+</body>
+</html>

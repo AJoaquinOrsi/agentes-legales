@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Escrito - Parte Actora</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;font-size:13px;background:#f0f4f8}
+.app{max-width:900px;margin:0 auto;padding:20px}
+.header{background:#1b6ca8;color:#fff;padding:12px 18px;border-radius:8px;margin-bottom:16px}
+.header h1{font-size:15px;font-weight:700}
+.form-panel{background:#fff;border:1px solid #ddd;border-radius:8px;padding:16px;margin-bottom:16px}
+.form-panel h2{font-size:12px;font-weight:700;color:#1b6ca8;margin-bottom:12px;text-transform:uppercase}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field.full{grid-column:1/-1}
+.field label{font-size:10px;font-weight:700;color:#555;text-transform:uppercase}
+.field input,.field textarea{border:1px solid #ddd;border-radius:4px;padding:7px 10px;font-size:13px;font-family:Arial,sans-serif;outline:none}
+.field input:focus,.field textarea:focus{border-color:#1b6ca8}
+.field textarea{min-height:90px;resize:vertical}
+.btn-row{display:flex;gap:8px;margin-bottom:16px}
+.btn{padding:9px 20px;border-radius:6px;border:none;cursor:pointer;font-size:13px;font-weight:700}
+.btn-primary{background:#1b6ca8;color:#fff}
+.btn-success{background:#28a745;color:#fff}
+.btn-gray{background:#6c757d;color:#fff}
+
+/* DOCUMENTO */
+.doc-wrap{background:#fff;border:1px solid #ccc;padding:0;margin-bottom:20px;display:none}
+.doc{font-family:Arial,sans-serif;font-size:12px;line-height:1.8;color:#000;padding:2.5cm;text-align:justify}
+.doc p{margin-bottom:8px;text-align:justify}
+.doc .titulo{font-weight:700;text-decoration:underline;text-align:center;margin-bottom:16px;font-size:12px}
+.doc .seccion{font-weight:700;text-decoration:underline;margin-top:16px;margin-bottom:8px}
+.doc .subseccion{font-weight:700;margin-top:12px;margin-bottom:6px}
+.doc .punto{margin-left:20px;margin-bottom:6px}
+.doc .cierre{text-align:right;margin-top:24px}
+
+@media print{
+  body{background:#fff}
+  .app{padding:0;max-width:100%}
+  .header,.form-panel,.btn-row{display:none!important}
+  .doc-wrap{display:block!important;border:none}
+  .doc{padding:2cm 2.5cm}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <h1>Generador de Escrito — Parte Actora</h1>
+  </div>
+
+  <div class="form-panel">
+    <h2>Datos del caso</h2>
+    <div class="grid">
+      <div class="field">
+        <label>Nombre del cliente</label>
+        <input type="text" id="cliente" placeholder="Ej: TALAVERA JULIO ARIEL">
+      </div>
+      <div class="field">
+        <label>Nombre de la ART</label>
+        <input type="text" id="art" placeholder="Ej: FEDERACION PATRONAL ART">
+      </div>
+      <div class="field">
+        <label>Nombre del empleador</label>
+        <input type="text" id="empleador" placeholder="Ej: EMPRENDIMIENTOS CONSTRUCTIVOS IMPACTOS S.A.">
+      </div>
+      <div class="field">
+        <label>Fecha del accidente</label>
+        <input type="date" id="fecha">
+      </div>
+      <div class="field full">
+        <label>Relato de los hechos</label>
+        <textarea id="hechos" placeholder="Describí detalladamente cómo ocurrió el accidente..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="generar()">Generar escrito</button>
+    <button class="btn btn-success" onclick="imprimir()">Imprimir / PDF</button>
+    <button class="btn btn-gray" onclick="limpiar()">Limpiar</button>
+  </div>
+
+  <div class="doc-wrap" id="doc-wrap">
+    <div class="doc" id="documento"></div>
+  </div>
+
+</div>
+<script>
+function fmtFecha(raw){
+  if(!raw)return"[FECHA]";
+  const[y,m,d]=raw.split("-");
+  const meses=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+  return d+" de "+meses[parseInt(m)-1]+" de "+y;
+}
+
+function generar(){
+  const cliente=document.getElementById("cliente").value.trim()||"[NOMBRE_CLIENTE]";
+  const art=document.getElementById("art").value.trim()||"[NOMBRE_ART]";
+  const empleador=document.getElementById("empleador").value.trim()||"[NOMBRE_EMPLEADOR]";
+  const fecha=fmtFecha(document.getElementById("fecha").value.trim());
+  const hechos=document.getElementById("hechos").value.trim()||"[RELATO_HECHOS]";
+
+  const html=`
+<p class="titulo">PARTE ACTORA RELATA HECHOS- OFRECE PRUEBA MÉDICA- SOLICITA INAPLICABILIDAD DE BAREMO 549/2025- SOLICITA SE DESIGNE AUDIENCIA MÉDICA.-</p>
+
+<p>Señor Superintendente:</p>
+<p style="text-indent:40px">ARRECHEA LEANDRO T° 129 F° 33 / CASI T° LII F° 52 en mi carácter de letrado patrocinante de la parte actora en las presentes actuaciones, en virtud del decreto 5/2026 vengo por el presente a ofrecer prueba; solicitando se tenga por presentada y se de integro cumplimiento al Art 1 bis, inciso a, de la Ley 19.549, el cual establece el principio de la tutela administrativa efectiva, el cual debe primar en todo proceso administrativo.</p>
+<p>En virtud de esta disposición, corresponde reconocer y garantizar al Sr <strong>${cliente}</strong> los derechos fundamentales de un debido proceso adjetivo en el marco de los procedimientos administrativos, tales como:</p>
+<p class="punto">1.- El derecho a ser oído por parte de la autoridad administrativa competente.</p>
+<p class="punto">2.- El derecho a <strong>ofrecer y producir prueba</strong> que acredite los hechos que sustentan la solicitud (y que la misma se produzca en búsqueda de la verdad material). -</p>
+<p class="punto">3.- El derecho a recibir una decisión fundada en un plazo razonable, conforme al principio de razonabilidad y celeridad en la tramitación de los procedimientos administrativos. En este contexto, se pretende que se reconozcan y garanticen estos derechos procesales del trabajador, con el fin de que se resuelva el presente reclamo conforme a derecho y dentro de los plazos establecidos, en virtud de la legislación vigente, en especial la Ley 24.557.</p>
+
+<p class="seccion">II.- HECHOS:</p>
+<p>${hechos}</p>
+
+<p class="seccion">III.- OFRECE PRUEBA.-</p>
+<p>En cumplimiento con la Res. SRT 5/2026 ofrezco la siguiente prueba:</p>
+
+<p class="subseccion">III. A) OFRECE PRUEBA PERICIAL MÉDICA. SE OPONE A LOS RESULTADOS DE ESTUDIOS MÉDICOS INCORPORADOS POR LA ART - SOLICITA SE DESIGNE AUDIENCIA MÉDICA - SOLICITA REVISIÓN MÉDICA INTEGRAL.-</p>
+<p>Desde ya, esta parte se opone expresamente a los resultados de los estudios médicos aportados por la aseguradora <strong>${art}</strong> En tanto los mismos no reflejan adecuadamente la gravedad de las lesiones sufridas por el trabajador ni el real estado de su salud actual. Resulta llamativo —por no decir contradictorio— que, pese a la entidad de los hechos denunciados y la multiplicidad de lesiones documentadas en la historia clínica, los informes presentados por la ART minimicen e incluso omitan consideraciones fundamentales sobre el estado físico del Sr <strong>${cliente}</strong> Por ello, se impugnan formalmente dichos informes, y se solicita la producción de una nueva revisión médica imparcial que garantice la debida tutela administrativa conforme a la Ley 19.549. –</p>
+<p>Solicito que la misma sea llevada a cabo por profesional médico especializado en medicina del trabajo, medicina legal o la especialidad que se estime pertinente, facultado para realizar los exámenes, estudios clínicos y complementarios necesarios.</p>
+<p>El médico legista deberá:</p>
+<p class="punto">1.- Determinar si las lesiones descriptas por el trabajador y sus secuelas guardan relación causal directa con el hecho denunciado, conforme los antecedentes asistenciales, estudios médicos e historia clínica obrantes en el expediente. –</p>
+<p class="punto">2.- Describir técnicamente cada una de las lesiones padecidas por el trabajador, conforme diagnóstico clínico, imágenes, prácticas médicas realizadas y evolución registrada en su historia clínica.</p>
+<p class="punto">3.- Determinar el grado de incapacidad que presenta el trabajador como consecuencia de las siguientes lesiones y afecciones:</p>
+<p class="punto">4.- Determinar la existencia de factores de ponderación, conforme Decreto 659/96, evaluando edad, tareas habituales, impacto en la vida cotidiana, entre otros criterios relevantes.</p>
+<p class="punto">5.- Informar si el trabajador presenta, a la fecha, algún grado de incapacidad laborativa permanente, y en su caso, el porcentaje correspondiente conforme Baremo Decreto 659/96.-</p>
+<p class="punto">6.- Determinar si el cuadro clínico se encuentra consolidado y si ha finalizado el período de rehabilitación, o si por el contrario requiere nuevas prestaciones médicas o tratamientos complementarios, conforme lo previsto en la Ley 24.557.</p>
+<p class="punto">7.- Indicar si, a raíz de las secuelas físicas y funcionales que presenta el trabajador, resulta aconsejable o necesaria su recalificación profesional o reubicación laboral, considerando la imposibilidad o restricción para desempeñar las tareas que desarrollaba al momento del accidente para el empleador <strong>${empleador}</strong>. A tales efectos, el médico interviniente en la junta médica otorgada por la SRT, deberá valorar la aptitud laboral residual del trabajador y la razonabilidad de continuar en su puesto habitual sin comprometer su salud.</p>
+<p>Pido se tenga presente lo manifestado a sus efectos en cuanto a las oposiciones efectuadas y, en consecuencia, se produzca la prueba ofrecida precedentemente (prueba pericial médica y psicológica). –</p>
+
+<p class="subseccion">III.B.- SOLICITA INAPLICABILIDAD DECRETO 549/2025. SOLICITA APLICABILIDAD DECRETO 659/96. –</p>
+<p class="subseccion">a).- Solicita aplicación del Baremo vigente al momento del siniestro -</p>
+<p>El artículo 3 del Decreto 549/2025 dispone: <em>"La 'Tabla de Evaluación de Incapacidades Laborales', sustituida por el artículo 1° del presente decreto, entrará en vigencia a los ciento ochenta (180) días corridos, contados desde su publicación en el Boletín Oficial, y a partir de esa fecha resultará de aplicación a toda valoración o determinación de incapacidad laboral que no haya sido aún dictada, independientemente de la instancia administrativa o judicial en la que se encuentre."</em> (el destacado me pertenece).-</p>
+<p>La norma transcripta resulta manifiestamente inconstitucional en cuanto pretende imponer la aplicación del nuevo baremo a contingencias anteriores a su dictado y a procesos en trámite, alterando situaciones jurídicas constituidas y créditos indemnizatorios consolidados, violentando de tal modo el derecho de propiedad y a la reparación integral de indudable raigambre constitucional.-</p>
+<p>En consecuencia, corresponde declarar su inconstitucionalidad y, por ende, la inaplicabilidad del nuevo baremo introducido por el Decreto 549/2025 al caso de autos, debiendo aplicarse la Tabla de Evaluación de Incapacidades Laborales aprobada por el Decreto 659/1996, vigente al momento del infortunio.</p>
+<p>En primer término, es evidente que corresponde aplicar el baremo vigente al momento del accidente o primera manifestación invalidante, pues es en ese instante cuando nace el deber de reparar en cabeza de la Aseguradora de Riesgos del Trabajo y, correlativamente, el crédito indemnizatorio en favor del trabajador.</p>
+<p>Así lo establece el artículo 2 de la Ley 26.773 al disponer que: <em>"El derecho a la reparación dineraria se computará, más allá del momento en que se determine su procedencia y alcance, desde que acaeció el evento dañoso o se determinó la relación causal adecuada de la enfermedad profesional".</em></p>
+<p>La disposición es clara: el derecho surge con el hecho dañoso y no con la sentencia ni con la determinación judicial o administrativa de incapacidad. Por consiguiente, las reglas que inciden en la cuantificación del daño —entre ellas el baremo que fija el porcentaje de incapacidad— deben ser las vigentes al momento en que el crédito se incorpora al patrimonio del trabajador.-</p>
+<p>En este sentido, el artículo 7 del Código Civil y Comercial de la Nación establece: <em>"A partir de su entrada en vigencia, las leyes se aplican a las consecuencias de las relaciones y situaciones jurídicas existentes. Las leyes no tienen efecto retroactivo, sean o no de orden público, excepto disposición en contrario. La retroactividad establecida por la ley no puede afectar derechos amparados por garantías constitucionales."</em></p>
+<p>A la luz de esta norma, el nuevo baremo no puede aplicarse a contingencias anteriores a su dictado. En primer lugar, porque el derecho indemnizatorio constituye un derecho consolidado desde el momento del accidente. Desde entonces nace la obligación resarcitoria y el crédito integra el patrimonio del trabajador, aun cuando su cuantificación definitiva se produzca con posterioridad.-</p>
+<p>En segundo lugar, porque aun cuando se pretendiera otorgar efecto retroactivo al nuevo régimen —lo que el artículo 7 CCyC admite solo de manera excepcional— tal retroactividad no puede afectar derechos amparados por garantías constitucionales, lo que ocurriría en el caso toda vez que la aplicación de un baremo posterior más restrictivo importa reducir el quantum indemnizatorio respecto del régimen vigente al momento del hecho, afectando de tal modo el derecho de propiedad consagrado en el artículo 17 de la Constitución Nacional y el principio de reparación integral que encuentra sustento en el artículo 19 de la Carta Magna y en los tratados internacionales con jerarquía constitucional (artículo 75 inciso 22 CN).-</p>
+<p>Debe destacarse que el baremo no constituye una mera norma procesal, sino un elemento sustancial que incide directamente en la determinación del porcentaje de incapacidad y, por ende, en el monto de la prestación dineraria. <strong>Su modificación impacta en la esencia misma del derecho indemnizatorio.</strong> Aplicarlo a hechos anteriores importaría alterar la medida del derecho ya nacido, vulnerando la seguridad jurídica y el derecho de propiedad y a una reparación integral de la actora.</p>
+<p>En otro orden, el artículo 8 inciso 3 de la Ley 24.557 establece que el grado de incapacidad laboral permanente será determinado por las Comisiones Médicas "en base a la tabla de evaluación de las incapacidades laborales, que elaborará el Poder Ejecutivo Nacional". La norma confiere al Poder Ejecutivo una facultad técnica y reglamentaria: diseñar y actualizar la tabla de evaluación. Sin embargo, dicha habilitación en modo alguno lo autoriza a regular el ámbito temporal de aplicación de esa tabla.</p>
+<p>El artículo 99 inciso 2 de la Constitución Nacional dispone que el Presidente de la Nación "expide las instrucciones y reglamentos que sean necesarios para la ejecución de las leyes de la Nación, cuidando de no alterar su espíritu con excepciones reglamentarias".- Esta cláusula constitucional fija un límite claro a la potestad reglamentaria: el reglamento no puede modificar, restringir ni ampliar el alcance sustancial de la ley que reglamenta. En el caso, la Ley 24.557 no contiene previsión alguna que habilite al Poder Ejecutivo a regular la aplicación temporal de un nuevo baremo.-</p>
+<p>Al establecer en su artículo 3 que la nueva tabla será aplicable a toda valoración o determinación de incapacidad que no haya sido aún dictada, el Decreto 549/2025 introduce una regla de derecho transitorio que impacta directamente sobre la determinación del quantum indemnizatorio. Esa regulación excede el ámbito técnico de elaboración de la tabla y se proyecta sobre el régimen sustancial de responsabilidad.- En otras palabras, el Poder Ejecutivo no solo elaboró una nueva tabla —facultad que le está reconocida— sino que además pretende imponer su aplicación a situaciones jurídicas nacidas bajo un régimen anterior, afectando el contenido económico del derecho del trabajador.- <strong>Esa decisión no es meramente reglamentaria: es sustancialmente legislativa.-</strong></p>
+<p>En síntesis, el artículo 3 del Decreto 549/2025 deviene inconstitucional por dos órdenes de razones claramente diferenciables.- En primer lugar, por su carácter retroactivo y lesivo de derechos constitucionales. La disposición pretende imponer la aplicación del nuevo baremo —de carácter más restrictivo— a contingencias anteriores y a procesos en trámite, afectando derechos ya incorporados al patrimonio del trabajador desde el momento del accidente, conforme lo establece el artículo 2 de la Ley 26.773. Tal retroactividad incide directamente en el quantum indemnizatorio, reduciendo la extensión del derecho resarcitorio bajo un régimen posterior más gravoso.- Ello vulnera el derecho de propiedad consagrado en el artículo 17 de la Constitución Nacional y el principio de reparación integral que encuentra fundamento en el artículo 14 bis y en el artículo 19 de la Constitución Nacional, además de los tratados internacionales con jerarquía constitucional (artículo 75 inciso 22 CN).-</p>
+<p>En segundo lugar, el artículo 3 del Decreto 549/2025 configura un exceso en el ejercicio de la potestad reglamentaria. El artículo 8 inciso 3 de la Ley 24.557 autoriza al Poder Ejecutivo a elaborar la tabla de evaluación de incapacidades laborales, pero no le confiere competencia para regular su aplicación temporal en términos que alteren derechos ya nacidos ni para imponer su utilización en procesos en trámite.- Al extender el nuevo baremo a situaciones jurídicas consolidadas, el Decreto desborda el marco de ejecución de la ley y vulnera el artículo 99 inciso 2 de la Constitución Nacional, que prohíbe al Poder Ejecutivo alterar el espíritu de la ley mediante excepciones reglamentarias. La determinación del régimen temporal aplicable constituye materia propia de reserva legislativa y no puede ser modificada por vía reglamentaria.-</p>
+<p>Por todo lo expuesto, corresponde declarar la inconstitucionalidad del artículo 3 del Decreto 549/2025, disponer la inaplicabilidad del nuevo baremo al caso de autos y ordenar la aplicación de la Tabla de Evaluación de Incapacidades Laborales aprobada por el Decreto 659/1996, en resguardo de los principios de irretroactividad, tutela judicial efectiva y protección del trabajador.</p>
+
+<p class="subseccion">b.- Solicita SE DESIGNE AUDIENCIA MÉDICA - <u>Inconstitucionalidad manifiesta de la dispensa del examen médico presencial y de la realización de nuevos estudios médicos. Vaciamiento del procedimiento de divergencia y lesión directa a garantías constitucionales.-</u></p>
+<p>El Decreto 549/2025 incorpora una previsión de extrema gravedad institucional al establecer que: <em>"En situaciones donde el examen físico no sea necesario para identificar las secuelas conforme a las tablas específicas, la decisión de realizar dicho examen quedará a criterio del evaluador. En estos casos, el examen físico no se considerará un requisito indispensable para la valoración del daño, permitiendo al evaluador basarse en la naturaleza del diagnóstico y la documentación disponible."</em></p>
+<p>Dicha cláusula no constituye una mera regla técnica ni una pauta organizativa del procedimiento, sino una alteración sustancial, regresiva y arbitraria del régimen de determinación de la incapacidad laboral, que torna inconstitucional su aplicación al caso de autos.-</p>
+<p class="subseccion">b.1. Supresión del núcleo esencial del procedimiento de divergencia en la determinación de la incapacidad.-</p>
+<p>El procedimiento por divergencia en la determinación de la incapacidad fue instituido como una instancia de control real y efectivo frente a la evaluación inicial efectuada por la Aseguradora de Riesgos del Trabajo. Su razón de ser es inequívoca: sustraer la determinación del daño de la órbita exclusiva de la ART y someterla a una nueva valoración médica, objetiva e independiente.- La norma cuestionada aniquila esa finalidad. Autorizar que la divergencia se resuelva sin examen médico presencial y sin nuevos estudios implica, en los hechos, convalidar acríticamente la evaluación de la aseguradora, privando al trabajador de toda posibilidad real de revisión.- <strong>Un procedimiento de divergencia que se decide sin volver a examinar al trabajador no es divergencia: es una mera ratificación administrativa del dictamen de la ART, revestida de una apariencia de legalidad que encubre su absoluta vacuidad técnica.-</strong></p>
+<p class="subseccion">b.2. Conversión del trámite administrativo en una barrera artificial y dilatoria al acceso a la jurisdicción.-</p>
+<p>La disposición impugnada transforma al procedimiento administrativo previo en un obstáculo puramente formal, desprovisto de eficacia real, cuyo único efecto práctico es demorar el acceso del trabajador a la justicia. Se obliga al damnificado a transitar una instancia sin producción probatoria propia, sin revisión médica independiente, fundada exclusivamente en documentación aportada por la ART, parte económicamente interesada, para luego exigirle el agotamiento de dicho trámite como condición de procedibilidad judicial.- Este esquema lesiona frontalmente el derecho a la tutela judicial efectiva, consagrado por la Constitución Nacional y los tratados internacionales con jerarquía constitucional.-</p>
+<p class="subseccion">b.3. Violación palmaria del derecho de defensa y del debido proceso.-</p>
+<p>El examen médico presencial no es una formalidad prescindible: es el acto central e insustituible de la determinación de la incapacidad. Prescindir de él importa negar al trabajador la posibilidad de que sus secuelas sean constatadas de manera directa, impedir la valoración clínica actual y concreta del daño, y sustituir la prueba médica por un análisis meramente documental, unilateral y estático. Ello configura una violación palmaria del derecho de defensa (art. 18 CN) y del debido proceso, al eliminar la posibilidad de contradicción real y al consolidar una asimetría estructural en favor de la ART. Resulta inadmisible que un sistema que se presenta como tuitivo permita que la determinación del daño se base exclusivamente en estudios y diagnósticos producidos por quien tiene un interés económico directo en minimizar la incapacidad.-</p>
+<p class="subseccion">b.4. Desconocimiento del carácter evolutivo del daño y regresión en la protección del trabajador.-</p>
+<p>La norma desconoce deliberadamente que las secuelas incapacitantes no son realidades estáticas, <strong>sino procesos evolutivos que pueden agravarse, consolidarse o manifestarse con mayor claridad con el paso del tiempo</strong>. Eliminar la exigencia de un examen médico actualizado importa una regresión evidente en el nivel de protección del trabajador, vedada por el principio de progresividad en materia de derechos sociales y laborales.- El artículo 14 bis de la Constitución Nacional impone al Estado el deber de garantizar condiciones de protección efectivas. La dispensa del examen médico hace exactamente lo contrario: debilita el sistema en perjuicio del sujeto constitucionalmente protegido.-</p>
+<p class="subseccion">b.5. Exceso reglamentario grosero y ejercicio ilegítimo de facultades legislativas.-</p>
+<p>Al igual que ocurre con la aplicación retroactiva del baremo, esta disposición configura un exceso reglamentario manifiesto. Ni la Ley 24.557 ni la Ley 26.773 autorizan al Poder Ejecutivo a suprimir o relativizar un elemento esencial del procedimiento de determinación de la incapacidad. <strong>La decisión de prescindir del examen médico no es técnica ni organizativa: es sustancial, pues altera el contenido y la eficacia del derecho indemnizatorio.</strong> El artículo 99 inciso 2 de la Constitución Nacional prohíbe expresamente al Poder Ejecutivo alterar el espíritu de la ley bajo pretexto de reglamentarla. Sin embargo, el Decreto 549/2025 no se limita a reglamentar: <strong>reconfigura el procedimiento, lo vacía de contenido y lo convierte en una ficción administrativa.-</strong></p>
+<p>En consecuencia, debe ordenarse que el presente reclamo sea resuelto mediante una <strong><em>evaluación médica presencial, integral, actualizada e independiente, con realización de los estudios complementarios necesarios, como condición indispensable de validez constitucional del procedimiento.-</em></strong></p>
+
+<p class="seccion">IV.- DIFERENCIA ENTRE LESIÓN Y AFECCIÓN. LÍMITES DE LA OBLIGACIÓN DE DENUNCIA.-</p>
+<p>Es necesario efectuar una distinción precisa y relevante entre los conceptos de lesión y afección en el análisis de la situación clínica del trabajador. Esta diferenciación resulta fundamental para comprender los alcances de la denuncia realizada y las consecuencias posteriores derivadas del accidente.-</p>
+<p>La lesión, en términos técnicos, hace referencia al daño físico concreto e inmediato que resulta del hecho dañoso. Este daño es objetivo y directo, como, por ejemplo, un traumatismo, una fractura o cualquier otro tipo de alteración funcional de carácter inmediato.</p>
+<p>Por otro lado, la afección comprende todas aquellas consecuencias orgánicas, funcionales o psicológicas que se desarrollan con posterioridad a la lesión original, ya sea por mecanismos compensatorios o adaptativos del cuerpo a la lesión primitiva, como la aparición de trastornos psicológicos, síndromes dolorosos crónicos o alteraciones funcionales secundarias.</p>
+<p>En este contexto, no corresponde exigir que el trabajador haya denunciado individualmente todas las afecciones secundarias derivadas del accidente inicial, dado que la legislación vigente no impone tal obligación. En efecto, la Ley 24.557 y su Decreto Reglamentario 717/96 establecen claramente que la denuncia debe circunscribirse al accidente de trabajo o a la enfermedad profesional sufrida, y no requiere la individualización de las afecciones posteriores que puedan derivarse del mismo.</p>
+<p>La jurisprudencia del fuero laboral ha sido categórica al respecto, sosteniendo que: "(...) Con relación a la alegada falta de denuncia, considero que, tanto la ley 24.557 como su decreto reglamentario 717/96, solo imponen la obligación de denunciar las contingencias sufridas por el trabajador o la trabajadora, y no las afecciones que aquéllas provocan. Así, el art. 43 de la LRT dispone que '[e]l derecho a recibir las prestaciones de esta ley comienza a partir de la denuncia de los hechos causantes de daños derivados del trabajo', mientras que el art. 1 del decreto referido señala que '[e]l empleador está obligado a denunciar a la Aseguradora, inmediatamente de conocido, todo accidente de trabajo o enfermedad profesional que sufran sus dependientes. También podrá efectuar la denuncia el propio trabajador, sus derechohabientes o cualquier persona que haya tenido conocimiento del accidente de trabajo o enfermedad profesional' (...)" (Cfr. "Indartt, Sebastián Gabriel c/ A.R.T. Interacción S.A. s/ Accidente Ley Especial" – Expte. N° 8126/2016/CA1 – Juzgado N° 58 – Sala I, C.N.A.T.).</p>
+<p>Por lo tanto, resulta improcedente exigir al trabajador que haya debido denunciar de manera autónoma y específica cada una de las afecciones que se manifestaron con posterioridad al accidente inicial. Estas afecciones son una consecuencia natural y esperable del proceso evolutivo de la lesión primaria, y corresponde a la Aseguradora de Riesgos del Trabajo (ART), y en su caso, a la Comisión Médica, realizar la valoración integral y de oficio de todo el cuadro clínico, con el fin de asegurar que se brinde una reparación justa y adecuada conforme a lo dispuesto por la legislación aplicable. –</p>
+
+<p class="seccion">V.- PERICIAL PSICOLÓGICA.</p>
+<p>Ante lo traumático del accidente sufrido y la dificultad para realizar acciones tan cotidianas y simples, el actor padece importantes secuelas psíquicas, que se manifiestan como episodios de frustración. Atento ello, solicito se designe perito psicológico, para que conteste los siguientes puntos de pericia, a saber:</p>
+<p class="punto">1.- La realización de un estudio psicodiagnóstico exhaustivo, que incluya entrevistas clínicas, test proyectivos, escalas estandarizadas y cualquier otro recurso profesional que el especialista considere pertinente, con el objeto de valorar de manera objetiva y actual el estado psíquico del trabajador. –</p>
+<p class="punto">2.- Informe si existe una relación causal entre el hecho denunciado y los síntomas emocionales que presenta el trabajador, tales como: estrés postraumático, angustia, dificultad para reintegrarse a su vida social y laboral, entre otros.</p>
+<p class="punto">3.- Determine y cuantifique el grado de incapacidad psicofísica que el trabajador padece como consecuencia de las secuelas emocionales del hecho traumático sufrido, aplicando los parámetros del Baremo aprobado por Decreto 659/96. -</p>
+<p class="punto">4.- Determine si, al día de la fecha, el trabajador requiere tratamiento psiquiátrico, en concordancia con la indicación médica que surge de la historia clínica confeccionada oportunamente por los profesionales de la <strong>${art}</strong></p>
+
+<p class="seccion">VI.- PRINCIPIO PROTECTORIO – EL TRABAJADOR COMO SUJETO DE PREFERENTE TUTELA CONSTITUCIONAL</p>
+<p>La aplicación de una reglamentación vigente al momento del inicio del trámite ante la Superintendencia de Riesgos del Trabajo, en desmedro de la normativa vigente al momento del acaecimiento del infortunio laboral, resulta manifiestamente improcedente y violatoria del orden constitucional.</p>
+<p>Conforme el régimen instaurado por la Ley 24.557 y sus modificatorias, los derechos del trabajador nacen y se incorporan a su patrimonio jurídico al momento del hecho generador, no pudiendo ser posteriormente alterados por disposiciones reglamentarias sin vulnerar el principio de irretroactividad consagrado en el art. 7 del Código Civil y Comercial de la Nación, así como las garantías de legalidad, seguridad jurídica y propiedad reconocidas por los arts. 17, 18 y 19 de la Constitución Nacional.</p>
+<p>La Corte Suprema de Justicia de la Nación ha sido categórica al sostener que las normas no pueden aplicarse retroactivamente cuando afectan derechos ya consolidados (CSJN, "Espósito, Miguel Ángel c/ Provincia ART S.A.", Fallos: 339:781), criterio reiterado en materia de riesgos del trabajo al declarar la invalidez de disposiciones que desnaturalizan el sistema protectorio y desmejoran la situación del trabajador con posterioridad al siniestro.</p>
+<p>A ello se suma el respeto irrestricto del principio protectorio, piedra angular del Derecho del Trabajo, sobre el cual se estructura todo el ordenamiento jurídico laboral, tanto sustantivo como adjetivo. Dicho principio encuentra consagración expresa en el art. 14 bis de la Constitución Nacional y ha sido reforzado por los instrumentos internacionales de derechos humanos con jerarquía constitucional (art. 75 inc. 22 CN), posicionándose como un verdadero derecho humano del trabajador.</p>
+<p>En virtud de esta directriz primordial, corresponde efectuar una interpretación normativa conforme a los derechos humanos del trabajador, particularmente en lo relativo al acceso a una tutela judicial efectiva.</p>
+<p>En tal sentido, la Corte Suprema de Justicia de la Nación, en el precedente "Madorrán, Marta A. c/ Administración Nacional de Aduanas", incorporó al ámbito del Derecho del Trabajo el principio pro homine, de raigambre en el Derecho Internacional de los Derechos Humanos, estableciendo que el intérprete debe optar, entre las interpretaciones posibles, por aquella que proteja en mayor medida a la persona humana. Sostuvo el Máximo Tribunal que dicho principio constituye una manifestación del principio protectorio y que impone descartar interpretaciones restrictivas que obstaculizan el acceso a la efectiva tutela jurisdiccional, debiendo privilegiarse aquellas que posibiliten el pleno ejercicio de los derechos del trabajador.</p>
+<p>Este criterio ha sido reafirmado tanto por la jurisprudencia nacional como por el sistema interamericano de derechos humanos. La Corte Interamericana de Derechos Humanos, en su Opinión Consultiva sobre "Acceso a la justicia como garantía de los derechos económicos, sociales y culturales", ha destacado que los Estados deben remover los obstáculos normativos o procedimentales que impidan o restrinjan el acceso real y efectivo a la justicia en materia de derechos laborales.</p>
+<p>En igual línea, la Sala VII de la Cámara Nacional de Apelaciones del Trabajo, en autos "Herrera, Ángel Gustavo c/ Prevención ART S.A. s/ Accidente – Ley Especial", ratificó que el principio protectorio se proyecta también sobre las normas procesales, destacando que el trabajador debe ser considerado sujeto de preferente tutela constitucional, conforme lo señalado por la Corte Suprema en el fallo "Vizzoti, Carlos A. c/ AMSA S.A.". En dicho precedente, se enfatizó que tal carácter no solo deriva del art. 14 bis de la Constitución Nacional, sino también del Derecho Internacional de los Derechos Humanos con jerarquía constitucional, imponiendo una interpretación amplia y favorable al acceso a la justicia.</p>
+<p>En consecuencia, la aplicación retroactiva de reglamentaciones emanadas de la SRT deviene inconstitucional, en tanto importa una restricción ilegítima de derechos adquiridos, vulnera el principio protectorio y el principio pro homine, y frustra el acceso del trabajador a una revisión judicial amplia y efectiva.</p>
+
+<p class="seccion">VII.- PETITORIO. –</p>
+<p>En atención a las consideraciones de hecho y de derecho expuestas a lo largo del presente y en cumplimiento con las disposiciones legales vigentes, solicitamos que:</p>
+<p class="punto">a.- Se tengan presentes todas y cada una de las lesiones psicofísicas padecidas por el trabajador expuestas en el presente escrito. -</p>
+<p class="punto">b.- Se lleve a cabo una pericia médica y psicológica que contemple exhaustivamente todas las lesiones y secuelas que el trabajador padece, y se determine con precisión el grado de incapacidad que le corresponde conforme al Baremo de Incapacidades en vigor. –</p>
+<p class="punto">c.- Se evalúe la posibilidad de recalificación de las tareas del trabajador, teniendo en cuenta las secuelas derivadas del accidente, a fin de garantizar que su desempeño laboral no comprometa su salud física ni psíquica.</p>
+<p class="punto">d.- Se reconozca y respete el derecho del trabajador a ser escuchado, a ofrecer y producir prueba, y a recibir una decisión fundada dentro de un plazo razonable, conforme a lo estipulado por el artículo 1 bis, inciso a de la Ley 19.549. –</p>
+<p class="punto">e.- Se otorgue al trabajador el tratamiento y las prestaciones en especie establecidas por la Ley 24.557, y que se asegure la reparación integral de los daños sufridos, en concordancia con la normativa aplicable.-</p>
+<p>Por lo expuesto, solicito que se tenga por presentado este escrito y se dé curso a las peticiones realizadas, conforme a derecho.-</p>
+
+<div class="cierre">
+  <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Proveer de conformidad,</p>
+  <p>&nbsp;&nbsp;&nbsp;&nbsp;SERÁ JUSTICIA.-</p>
+</div>`;
+
+  document.getElementById("documento").innerHTML=html;
+  document.getElementById("doc-wrap").style.display="block";
+  document.getElementById("doc-wrap").scrollIntoView({behavior:"smooth"});
+}
+
+function imprimir(){
+  if(document.getElementById("doc-wrap").style.display==="none"){
+    alert("Primero generá el escrito.");return;
+  }
+  window.print();
+}
+
+function limpiar(){
+  ["cliente","art","empleador","fecha","hechos"].forEach(id=>{
+    document.getElementById(id).value="";
+  });
+  document.getElementById("doc-wrap").style.display="none";
+  document.getElementById("documento").innerHTML="";
+}
+
+// Recibir datos desde el agente via postMessage
+window.addEventListener("message", function(e){
+  if(e.data && e.data.tipo === "datos_escrito"){
+    const d = e.data;
+    if(d.cliente) document.getElementById("cliente").value = d.cliente;
+    if(d.art)     document.getElementById("art").value     = d.art;
+    if(d.empleador) document.getElementById("empleador").value = d.empleador;
+    if(d.fecha)   document.getElementById("fecha").value   = d.fecha;
+    if(d.hechos)  document.getElementById("hechos").value  = d.hechos;
+    generar();
+  }
+});
+
+// Tambien aceptar parametros en la URL
+(function(){
+  const p = new URLSearchParams(window.location.search);
+  if(p.get("cliente")||p.get("art")){
+    if(p.get("cliente")) document.getElementById("cliente").value = p.get("cliente");
+    if(p.get("art"))     document.getElementById("art").value     = p.get("art");
+    if(p.get("empleador")) document.getElementById("empleador").value = p.get("empleador");
+    if(p.get("fecha"))   document.getElementById("fecha").value   = p.get("fecha");
+    if(p.get("hechos"))  document.getElementById("hechos").value  = decodeURIComponent(p.get("hechos")||"");
+    generar();
+  }
+})();
+</script>
+</body>
+</html>

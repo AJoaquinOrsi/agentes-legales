@@ -1,0 +1,28 @@
+# ── Systemd service — Foliar se inicia automáticamente con el servidor ────────
+# Archivo: /etc/systemd/system/foliar.service
+# Reemplazá /home/ubuntu/foliar por la ruta real donde subiste el proyecto
+#
+# Pasos:
+#   1. Copiar a /etc/systemd/system/foliar.service
+#   2. sudo systemctl daemon-reload
+#   3. sudo systemctl enable foliar    ← arranca solo al reiniciar el VPS
+#   4. sudo systemctl start foliar
+#   5. sudo systemctl status foliar    ← verificar que corre
+
+[Unit]
+Description=Foliar — Agente de formularios
+After=network.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu/foliar
+EnvironmentFile=/home/ubuntu/foliar/.env
+ExecStart=/home/ubuntu/foliar/venv/bin/gunicorn -c gunicorn.conf.py app:app
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=foliar
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,76 @@
+# ── Nginx — configuración para Foliar ────────────────────────────────────────
+# Archivo: /etc/nginx/sites-available/foliar
+# Reemplazá TU_DOMINIO.COM por tu dominio real (ej: foliar.arrechea.com.ar)
+#
+# Pasos:
+#   1. Copiar este archivo a /etc/nginx/sites-available/foliar
+#   2. sudo ln -s /etc/nginx/sites-available/foliar /etc/nginx/sites-enabled/
+#   3. sudo certbot --nginx -d TU_DOMINIO.COM   (genera SSL gratis con Let's Encrypt)
+#   4. sudo nginx -t && sudo systemctl reload nginx
+
+server {
+    listen 80;
+    server_name TU_DOMINIO.COM www.TU_DOMINIO.COM;
+
+    # Certbot va a agregar automáticamente la redirección a HTTPS acá
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name TU_DOMINIO.COM www.TU_DOMINIO.COM;
+
+    # SSL — Certbot completa estas líneas automáticamente
+    # ssl_certificate     /etc/letsencrypt/live/TU_DOMINIO.COM/fullchain.pem;
+    # ssl_certificate_key /etc/letsencrypt/live/TU_DOMINIO.COM/privkey.pem;
+
+    # Seguridad TLS
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers on;
+
+    # Cabeceras de seguridad
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    add_header X-Content-Type-Options    nosniff always;
+    add_header X-Frame-Options           SAMEORIGIN always;
+    add_header Referrer-Policy           strict-origin-when-cross-origin always;
+
+    # Tamaño máximo de upload (PDFs)
+    client_max_body_size 25M;
+
+    # Proxy hacia Gunicorn
+    location / {
+        proxy_pass         http://127.0.0.1:8000;
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+
+        # Timeouts generosos (Claude puede tardar 60-90s)
+        proxy_connect_timeout 10s;
+        proxy_read_timeout    200s;
+        proxy_send_timeout    200s;
+    }
+
+    # SSE: deshabilitar buffering para que los eventos lleguen en tiempo real
+    location /api/stream/ {
+        proxy_pass             http://127.0.0.1:8000;
+        proxy_set_header       Host              $host;
+        proxy_set_header       X-Forwarded-Proto $scheme;
+        proxy_buffering        off;
+        proxy_cache            off;
+        proxy_read_timeout     300s;
+        proxy_set_header       Connection        '';
+        chunked_transfer_encoding on;
+    }
+
+    location /api/batch/stream/ {
+        proxy_pass             http://127.0.0.1:8000;
+        proxy_set_header       Host              $host;
+        proxy_set_header       X-Forwarded-Proto $scheme;
+        proxy_buffering        off;
+        proxy_cache            off;
+        proxy_read_timeout     600s;
+        proxy_set_header       Connection        '';
+        chunked_transfer_encoding on;
+    }
+}

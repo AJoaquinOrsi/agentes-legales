@@ -1,0 +1,52 @@
+# ── Entornos virtuales ────────────────────────────────────────────────────────
+venv/
+.venv/
+env/
+
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+
+# ── Secretos y credenciales (NUNCA subir) ────────────────────────────────────
+.env
+.env.*
+!.env.example
+.secret_key
+config.json
+credenciales.json
+*.key
+*.pem
+secrets.json
+
+# ── Base de datos ─────────────────────────────────────────────────────────────
+foliar.db
+*.db
+*.sqlite
+*.sqlite3
+
+# ── PDFs de prueba y casos (los templates de la app SÍ se suben) ─────────────
+caso_prueba.pdf
+test_*.pdf
+*.tmp.pdf
+
+# ── Logs y temporales ─────────────────────────────────────────────────────────
+*.log
+logs/
+/tmp/
+*.tmp
+
+# ── Sistema operativo ─────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── IDE ───────────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo

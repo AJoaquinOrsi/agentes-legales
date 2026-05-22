@@ -1,0 +1,275 @@
+[
+  {
+    "field_id": "NombreRazón Social",
+    "type": "text",
+    "page": 1
+  },
+  {
+    "field_id": "CUIT",
+    "type": "text",
+    "page": 1
+  },
+  {
+    "field_id": "Establecimiento del lugar de efectiva prestación de servicios o donde habitualmente reporta",
+    "type": "text",
+    "page": 1
+  },
+  {
+    "field_id": "Localidad",
+    "type": "text",
+    "page": 1
+  },
+  {
+    "field_id": "Provincia",
+    "type": "text",
+    "page": 1
+  },
+  {
+    "field_id": "DenominaciónRazón Social",
+    "type": "text",
+    "page": 1
+  },
+  {
+    "field_id": "CUIT En caso de empleadores",
+    "type": "text",
+    "page": 1
+  },
+  {
+    "field_id": "undefined",
+    "type": "checkbox",
+    "page": 1,
+    "checked_value": "On",
+    "unchecked_value": "Off"
+  },
+  {
+    "field_id": "undefined_2",
+    "type": "checkbox",
+    "page": 1,
+    "checked_value": "On",
+    "unchecked_value": "Off"
+  },
+  {
+    "field_id": "undefined_3",
+    "type": "checkbox",
+    "page": 1,
+    "checked_value": "On",
+    "unchecked_value": "Off"
+  },
+  {
+    "field_id": "Detallá la o las afecciones o diagnósticos derivados de la contingencia",
+    "type": "text",
+    "page": 2
+  },
+  {
+    "field_id": "Sí",
+    "type": "checkbox",
+    "page": 2,
+    "checked_value": "On",
+    "unchecked_value": "Off"
+  },
+  {
+    "field_id": "No",
+    "type": "checkbox",
+    "page": 2,
+    "checked_value": "On",
+    "unchecked_value": "Off"
+  },
+  {
+    "field_id": "Sí_2",
+    "type": "checkbox",
+    "page": 2,
+    "checked_value": "On",
+    "unchecked_value": "Off"
+  },
+  {
+    "field_id": "No_2",
+    "type": "checkbox",
+    "page": 2,
+    "checked_value": "On",
+    "unchecked_value": "Off"
+  },
+  {
+    "field_id": "Sí_3",
+    "type": "checkbox",
+    "page": 2,
+    "checked_value": "On",
+    "unchecked_value": "Off"
+  },
+  {
+    "field_id": "No_3",
+    "type": "checkbox",
+    "page": 2,
+    "checked_value": "On",
+    "unchecked_value": "Off"
+  },
+  {
+    "field_id": "Sí_4",
+    "type": "checkbox",
+    "page": 2,
+    "checked_value": "On",
+    "unchecked_value": "Off"
+  },
+  {
+    "field_id": "No_4",
+    "type": "checkbox",
+    "page": 2,
+    "checked_value": "On",
+    "unchecked_value": "Off"
+  },
+  {
+    "field_id": "Las partes deberán ofrecer en su primera presentación toda la prueba de la que intenten valerse acompañando en",
+    "type": "text",
+    "page": 2
+  },
+  {
+    "field_id": "Sí_5",
+    "type": "checkbox",
+    "page": 2,
+    "checked_value": "On",
+    "unchecked_value": "Off"
+  },
+  {
+    "field_id": "No_5",
+    "type": "checkbox",
+    "page": 2,
+    "checked_value": "On",
+    "unchecked_value": "Off"
+  },
+  {
+    "field_id": "undefined_4",
+    "type": "checkbox",
+    "page": 2,
+    "checked_value": "On",
+    "unchecked_value": "Off"
+  },
+  {
+    "field_id": "undefined_5",
+    "type": "checkbox",
+    "page": 2,
+    "checked_value": "On",
+    "unchecked_value": "Off"
+  },
+  {
+    "field_id": "Enfermedad Profesional_2",
+    "type": "checkbox",
+    "page": 2,
+    "checked_value": "On",
+    "unchecked_value": "Off"
+  },
+  {
+    "field_id": "Jurisdicción",
+    "type": "text",
+    "page": 3
+  },
+  {
+    "field_id": "undefined_6",
+    "type": "checkbox",
+    "page": 3,
+    "checked_value": "On",
+    "unchecked_value": "Off"
+  },
+  {
+    "field_id": "Domicilio de efectiva prestación de servicios",
+    "type": "checkbox",
+    "page": 3,
+    "checked_value": "On",
+    "unchecked_value": "Off"
+  },
+  {
+    "field_id": "Domicilio donde habitualmente reporta",
+    "type": "checkbox",
+    "page": 3,
+    "checked_value": "On",
+    "unchecked_value": "Off"
+  },
+  {
+    "field_id": "Firma Trabajador",
+    "type": "text",
+    "page": 3
+  },
+  {
+    "field_id": "Aclaración",
+    "type": "text",
+    "page": 3
+  },
+  {
+    "field_id": "Aclaración_2",
+    "type": "text",
+    "page": 3
+  },
+  {
+    "field_id": "CUIL",
+    "type": "text",
+    "page": 1
+  },
+  {
+    "field_id": "Nombre y Apellido",
+    "type": "text",
+    "page": 1
+  },
+  {
+    "field_id": "Nombre y Apellido Letrado",
+    "type": "text",
+    "page": 1
+  },
+  {
+    "field_id": "CUIT / Domcilio electrónico",
+    "type": "text",
+    "page": 1
+  },
+  {
+    "field_id": "Matrícula - Jurisdicción",
+    "type": "text",
+    "page": 1
+  },
+  {
+    "field_id": "Fecha de la denuncia_af_date",
+    "type": "text",
+    "page": 1
+  },
+  {
+    "field_id": "Fecha de baja laboral_af_date",
+    "type": "text",
+    "page": 1
+  },
+  {
+    "field_id": "Fecha de ocurrencia o diagnóstico_af_date",
+    "type": "text",
+    "page": 1
+  },
+  {
+    "field_id": "Detalle accidente o enfermedad profesional",
+    "type": "text",
+    "page": 1
+  },
+  {
+    "field_id": "Fecha_af_date",
+    "type": "text",
+    "page": 3
+  },
+  {
+    "field_id": "Porcentaje de incapacidad",
+    "type": "text",
+    "page": 2
+  },
+  {
+    "field_id": "Región del cuerpo afectada",
+    "type": "text",
+    "page": 2
+  },
+  {
+    "field_id": "Detalle prueba judicial",
+    "type": "text",
+    "page": 2
+  },
+  {
+    "field_id": "N°",
+    "type": "text",
+    "page": 3
+  },
+  {
+    "field_id": "Firma Letrado Patrocinante",
+    "type": "text",
+    "page": 3
+  }
+]

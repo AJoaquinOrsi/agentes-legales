@@ -1,0 +1,1554 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Foliar — Estudio Arrechea</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='2' y='2' width='20' height='20' rx='4' fill='%2315140F'/%3E%3Cpath d='M8 6.5h8M8 6.5v11M8 12h6' stroke='%23fff' stroke-width='1.8' stroke-linecap='square'/%3E%3Ccircle cx='17' cy='17' r='1.6' fill='%23fff'/%3E%3C/svg%3E">
+<style>html,body,#root{margin:0;padding:0;height:100%;background:#F7F6F2;overflow:hidden}*{box-sizing:border-box}</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="root"></div>
+
+<!-- ── TOKENS ── -->
+<script type="text/babel">
+(function(){
+const foliar = {
+  font: '"Inter Tight","Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif',
+  mono: '"JetBrains Mono","SF Mono",ui-monospace,Menlo,monospace',
+  canvas:'#F7F6F2', surface:'#FFFFFF', surfaceSoft:'#FBFAF6', surfaceSunken:'#F2F0EA',
+  line:'#E7E3D8', lineSoft:'#EFEBE0', lineStrong:'#D5CEBC',
+  ink:'#15140F', inkSoft:'#4A4740', inkMuted:'#8A8578', inkFaint:'#B3AE9E',
+  accent:'#1E3A5F', accentSoft:'#2B4E7A', accentPale:'#E8EEF5', accentInk:'#0F2440',
+  success:'#4A7A5A', successPale:'#EAF1EC',
+  warn:'#A67A2E', warnPale:'#F6EFDE',
+  danger:'#9A3B3B', dangerPale:'#F3E3E1',
+  conf:{ high:'#2C5F3F', med:'#8A7318', low:'#8A3E2E' },
+  shadow1:'0 1px 2px rgba(21,20,15,.04),0 0 0 1px rgba(21,20,15,.05)',
+  shadow2:'0 1px 3px rgba(21,20,15,.06),0 4px 12px rgba(21,20,15,.06)',
+  shadow3:'0 12px 32px rgba(21,20,15,.10),0 2px 6px rgba(21,20,15,.05)',
+  radius:{xs:4,sm:6,md:8,lg:12,xl:16},
+};
+if (!document.getElementById('foliar-font')) {
+  const lnk = document.createElement('link'); lnk.id='foliar-font'; lnk.rel='stylesheet';
+  lnk.href='https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap';
+  document.head.appendChild(lnk);
+  const s = document.createElement('style');
+  s.textContent=`.foliar-app{font-family:${foliar.font};color:${foliar.ink};font-feature-settings:"ss01","cv11"}.foliar-app *::selection{background:${foliar.accent};color:#fff}.foliar-app button{font-family:inherit}.foliar-app input,.foliar-app textarea,.foliar-app select{font-family:inherit;color:inherit}@keyframes foliar-pulse{0%,100%{opacity:1}50%{opacity:.45}}@keyframes foliar-caret{0%,50%{opacity:1}50.01%,100%{opacity:0}}@keyframes foliar-spin{to{transform:rotate(360deg)}}@keyframes foliar-fade{from{opacity:0}to{opacity:1}}@keyframes foliar-drawer{from{transform:translateX(40px);opacity:0}to{transform:translateX(0);opacity:1}}`;
+  document.head.appendChild(s);
+}
+function FoliarMark({size=22,color}){
+  const c=color||foliar.ink;
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={{display:'block',flexShrink:0}}><rect x="2" y="2" width="20" height="20" rx="4" fill={c}/><path d="M8 6.5h8M8 6.5v11M8 12h6" stroke="#fff" strokeWidth="1.8" strokeLinecap="square"/><circle cx="17" cy="17" r="1.6" fill="#fff"/></svg>;
+}
+function FoliarLogo({size=22,color,collapsed}){
+  return <div style={{display:'flex',alignItems:'center',gap:10}}><FoliarMark size={size} color={color}/>{!collapsed&&<span style={{fontSize:size*.78,fontWeight:600,letterSpacing:-.4,color:color||foliar.ink}}>Foliar</span>}</div>;
+}
+Object.assign(window,{foliar,FoliarMark,FoliarLogo});
+})();
+</script>
+
+<!-- ── PRIMITIVES ── -->
+<script type="text/babel">
+(function(){
+const {foliar}=window;
+function Button({children,variant='primary',size='md',icon,iconRight,disabled,style={},onClick,type}){
+  const h=size==='sm'?30:size==='lg'?44:36, pad=size==='sm'?'0 10px':size==='lg'?'0 18px':'0 14px', fs=size==='sm'?12:size==='lg'?14:13;
+  const base={display:'inline-flex',alignItems:'center',justifyContent:'center',gap:8,height:h,padding:pad,fontSize:fs,fontWeight:500,letterSpacing:-.1,borderRadius:foliar.radius.sm,border:'1px solid transparent',cursor:disabled?'default':'pointer',transition:'background .15s,border-color .15s',opacity:disabled?.5:1};
+  const v={primary:{background:foliar.ink,color:'#fff',borderColor:foliar.ink},accent:{background:foliar.accent,color:'#fff',borderColor:foliar.accent},secondary:{background:foliar.surface,color:foliar.ink,borderColor:foliar.lineStrong},ghost:{background:'transparent',color:foliar.inkSoft,borderColor:'transparent'},outline:{background:'transparent',color:foliar.ink,borderColor:foliar.lineStrong}};
+  return <button type={type||'button'} onClick={onClick} disabled={disabled} style={{...base,...v[variant],...style}}>{icon&&<span style={{display:'flex',opacity:.85}}>{icon}</span>}{children}{iconRight&&<span style={{display:'flex',opacity:.85}}>{iconRight}</span>}</button>;
+}
+function ConfidenceBar({value=0.9}){
+  const c=value>=0.85?foliar.conf.high:value>=0.6?foliar.conf.med:foliar.conf.low;
+  return <div style={{display:'inline-flex',alignItems:'center',gap:6,fontFamily:foliar.mono,fontSize:10,color:foliar.inkMuted}}><div style={{width:28,height:3,background:foliar.surfaceSunken,borderRadius:2,overflow:'hidden'}}><div style={{width:`${value*100}%`,height:'100%',background:c}}/></div><span style={{color:c,fontWeight:500}}>{Math.round(value*100)}</span></div>;
+}
+function AgentField({label,value,state='empty',confidence=0.9,mono,hint,multi}){
+  const ss={empty:{bd:foliar.line,bg:foliar.surface},filling:{bd:foliar.accent,bg:foliar.surface},filled:{bd:foliar.line,bg:foliar.surface},uncertain:{bd:'#E8DCB7',bg:foliar.warnPale},edited:{bd:foliar.ink,bg:foliar.surface}};
+  const s=ss[state]||ss.empty;
+  return <div><div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:5}}><label style={{fontSize:11,color:foliar.inkSoft,fontWeight:500}}>{label}</label>{state==='filled'&&<ConfidenceBar value={confidence}/>}{state==='uncertain'&&<span style={{fontSize:10,color:foliar.warn,fontWeight:500}}>· revisar</span>}{state==='editing'&&<span style={{fontSize:10,color:foliar.ink,fontWeight:500}}>· editado</span>}</div><div style={{background:s.bg,border:`1px solid ${s.bd}`,borderRadius:foliar.radius.sm,padding:multi?'8px 10px':'7px 10px',minHeight:multi?54:30,fontSize:12.5,color:value?foliar.ink:foliar.inkFaint,fontFamily:mono?foliar.mono:foliar.font,boxShadow:state==='filling'?`0 0 0 3px ${foliar.accentPale}`:'none',transition:'background .2s,border-color .2s',display:'flex',alignItems:multi?'flex-start':'center'}}><span style={{whiteSpace:multi?'pre-wrap':'nowrap',overflow:'hidden',textOverflow:'ellipsis',flex:1}}>{value||<span style={{color:foliar.inkFaint}}>{hint||'—'}</span>}</span>{state==='filling'&&<span style={{display:'inline-block',width:1.5,height:14,background:foliar.accent,marginLeft:1,animation:'foliar-caret 1s infinite'}}/>}</div></div>;
+}
+function PdfPage({title='ANEXO I – INCAPACIDAD',highlight,style={}}){
+  const sec=(lbl,rows,hi)=><div style={{border:`1px solid ${foliar.lineSoft}`,borderRadius:2,marginBottom:4}}><div style={{background:hi?'#FFF6D6':'#EEF4FA',color:'#0F2440',fontSize:8.5,fontWeight:600,padding:'3px 8px',textAlign:'center',outline:hi?`2px solid ${foliar.accent}`:'none',outlineOffset:hi?1:0,transition:'background .3s'}}>{lbl}</div><div style={{padding:'4px 8px'}}>{Array.from({length:rows}).map((_,i)=><div key={i} style={{display:'flex',gap:6,padding:'3px 0',borderBottom:i<rows-1?`1px dotted ${foliar.lineSoft}`:'none'}}><div style={{width:'40%',height:3,background:foliar.inkFaint,opacity:.5,borderRadius:1}}/><div style={{flex:1,height:3,background:foliar.inkFaint,opacity:.25,borderRadius:1}}/></div>)}</div></div>;
+  return <div style={{width:'100%',height:'100%',background:'#fff',border:`1px solid ${foliar.line}`,borderRadius:2,display:'flex',flexDirection:'column',overflow:'hidden',...style}}><div style={{padding:'10px 14px',borderBottom:`1px solid ${foliar.lineSoft}`,textAlign:'center'}}><div style={{fontSize:9,fontWeight:700,letterSpacing:1,color:'#000'}}>{title}</div></div><div style={{flex:1,padding:'8px 12px',overflow:'hidden',display:'flex',flexDirection:'column'}}>{sec('Datos del trabajador',2,highlight===0)}{sec('Asistencia Letrada',3,highlight===1)}{sec('Datos del Empleador',4,highlight===2)}{sec('Contingencia',4,highlight===3)}</div><div style={{padding:'6px 12px',borderTop:`1px solid ${foliar.lineSoft}`,display:'flex',justifyContent:'space-between',fontSize:8,color:foliar.inkMuted,fontFamily:foliar.mono}}><span>pág. 1 / 3</span><span>origen.pdf</span></div></div>;
+}
+function Icon({path,size=14,stroke=1.6}){return <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={stroke} strokeLinecap="round" strokeLinejoin="round">{path}</svg>;}
+const UploadIcon=(p)=><Icon {...p} path={<><path d="M8 11V3M4.5 6.5L8 3l3.5 3.5"/><path d="M2.5 12.5v1a1 1 0 001 1h9a1 1 0 001-1v-1"/></>}/>;
+const PlusIcon=(p)=><Icon {...p} path={<><path d="M8 3v10M3 8h10"/></>}/>;
+const ClockIcon=(p)=><Icon {...p} path={<><circle cx="8" cy="8" r="5.5"/><path d="M8 5v3l2 1.5"/></>}/>;
+const CheckIcon=(p)=><Icon {...p} path={<path d="M3 8.5L6.5 12 13 4.5"/>}/>;
+const ArrowIcon=(p)=><Icon {...p} path={<><path d="M3 8h10"/><path d="M9 4l4 4-4 4"/></>}/>;
+const DownloadIcon=(p)=><Icon {...p} path={<><path d="M8 3v8M4.5 7.5L8 11l3.5-3.5"/><path d="M3 13h10"/></>}/>;
+const SendIcon=(p)=><Icon {...p} path={<><path d="M13.5 2.5L2 7.5l4.5 1.5L8 13.5 13.5 2.5z"/><path d="M6.5 9l3-3"/></>}/>;
+const SearchIcon=(p)=><Icon {...p} path={<><circle cx="7" cy="7" r="4"/><path d="M10 10l3.5 3.5"/></>}/>;
+const FileIcon=(p)=><Icon {...p} path={<><path d="M4 2h5l3 3v9H4z"/></>}/>;
+Object.assign(window,{Button,ConfidenceBar,AgentField,PdfPage,UploadIcon,PlusIcon,ClockIcon,CheckIcon,ArrowIcon,DownloadIcon,SendIcon,SearchIcon,FileIcon});
+})();
+</script>
+
+<!-- ── APP ── -->
+<script type="text/babel">
+(function(){
+const {foliar,FoliarLogo,Button,ConfidenceBar,AgentField,PdfPage,UploadIcon,PlusIcon,ClockIcon,CheckIcon,ArrowIcon,DownloadIcon,SendIcon,SearchIcon,FileIcon}=window;
+
+const PRODUCTS={
+  combo:{label:'Trámite completo',steps:['Subir documento','Procesamiento','Revisar y editar','Descargar paquete'],icon:(s=13)=><svg width={s} height={s} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="1.5" y="3.5" width="7" height="9" rx="1"/><rect x="5" y="2" width="7" height="9" rx="1"/><rect x="8.5" y="0.5" width="7" height="9" rx="1"/></svg>},
+  formulario:{label:'Formulario',steps:['Subir documento','Procesamiento','Revisar y editar','Descargar'],icon:(s=13)=><svg width={s} height={s} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><rect x="3" y="2" width="10" height="12" rx="1.5"/><path d="M5.5 6h5M5.5 8.5h5M5.5 11h3"/></svg>},
+  telegrama:{label:'Telegrama',steps:['Subir antecedentes','Procesamiento','Revisar texto','Despachar'],icon:(s=13)=><svg width={s} height={s} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M2.5 4h11v8h-11z"/><path d="M2.5 4l5.5 4 5.5-4"/></svg>},
+  escrito:{label:'Escrito',steps:['Subir expediente','Procesamiento','Revisar escrito','Exportar'],icon:(s=13)=><svg width={s} height={s} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M4 1.5h6l3 3v10H4z"/><path d="M10 1.5v3h3"/><path d="M6 8h5M6 10.5h5M6 6h3"/></svg>},
+};
+
+const REVIEW_SECTIONS=[
+  {title:'Datos del trabajador',keys:['Nombre y Apellido','CUIL']},
+  {title:'Asistencia letrada',keys:['asistencia_nombre','asistencia_cuit','asistencia_matricula']},
+  {title:'Datos del empleador',keys:['NombreRazón Social','CUIT','Localidad','Provincia','Establecimiento del lugar de efectiva prestación de servicios o donde habitualmente reporta']},
+  {title:'Datos de la ART',keys:['art_nombre','art_cuit']},
+  {title:'Contingencia',keys:['tipo_contingencia','fecha_denuncia','fecha_baja','fecha_ocurrencia','Detalle accidente o enfermedad profesional']},
+  {title:'Afecciones',keys:['Detallá la o las afecciones o diagnósticos derivados de la contingencia']},
+  {title:'Atención médica',keys:['atencion_art','alta_medica','atencion_obra_social','estudios_complementarios']},
+  {title:'Comisión médica',keys:['comision_medica','fundamento_domicilio']},
+];
+
+// ── Stepper ──
+function Stepper({step,product='formulario'}){
+  const steps=(PRODUCTS[product]||PRODUCTS.formulario).steps;
+  return <div style={{display:'flex',alignItems:'center',gap:0,fontSize:12}}>{steps.map((s,i)=>{const done=i<step,active=i===step;return <React.Fragment key={s}><div style={{display:'flex',alignItems:'center',gap:8,color:active?foliar.ink:done?foliar.inkSoft:foliar.inkMuted}}><div style={{width:20,height:20,borderRadius:10,background:done?foliar.accent:active?foliar.ink:foliar.surface,color:done||active?'#fff':foliar.inkMuted,border:`1px solid ${done?foliar.accent:active?foliar.ink:foliar.lineStrong}`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:600,fontFamily:foliar.mono}}>{done?<CheckIcon size={10} stroke={2}/>:i+1}</div><span style={{fontWeight:active?500:400}}>{s}</span></div>{i<steps.length-1&&<div style={{width:28,height:1,background:done?foliar.accent:foliar.line,margin:'0 10px'}}/>}</React.Fragment>;})}</div>;
+}
+
+// ── ProductSidebar ──
+function ProductSidebar({product,setProduct,go,activeLib,user,onLogout}){
+  const initials=user?user.username.slice(0,2).toUpperCase():'?';
+  const isVisor=user&&user.rol==='Visor';
+  return <aside style={{width:220,flexShrink:0,borderRight:`1px solid ${foliar.line}`,background:foliar.surfaceSoft,display:'flex',flexDirection:'column',padding:'16px 12px'}}>
+    <div style={{padding:'2px 8px 22px'}}><FoliarLogo size={20}/></div>
+    {!isVisor&&<><div style={{fontSize:10,color:foliar.inkMuted,fontFamily:foliar.mono,letterSpacing:.5,textTransform:'uppercase',padding:'0 10px 8px',fontWeight:500}}>Nuevo trámite</div>
+    <nav style={{display:'flex',flexDirection:'column',gap:2}}>
+      {['formulario','telegrama','escrito'].map(k=>{const p=PRODUCTS[k];const on=product===k;return <div key={k} onClick={()=>{setProduct(k);go('upload');}} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 10px',borderRadius:foliar.radius.sm,background:on?foliar.surface:'transparent',border:`1px solid ${on?foliar.line:'transparent'}`,boxShadow:on?foliar.shadow1:'none',cursor:'pointer',color:on?foliar.ink:foliar.inkSoft,fontSize:13,fontWeight:on?500:400}}><span style={{opacity:on?1:.6,display:'flex',color:on?foliar.accent:foliar.inkSoft}}>{p.icon(13)}</span><span>{p.label}</span>{on&&<span style={{marginLeft:'auto',width:5,height:5,borderRadius:3,background:foliar.accent}}/>}</div>;})}
+      <div onClick={()=>{setProduct('combo');go('upload');}} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 10px',marginTop:4,borderRadius:foliar.radius.sm,background:product==='combo'?foliar.ink:'transparent',border:`1px solid ${product==='combo'?foliar.ink:foliar.line}`,cursor:'pointer',color:product==='combo'?'#fff':foliar.inkSoft,fontSize:13,fontWeight:product==='combo'?500:400}}>
+        <span style={{display:'flex',color:foliar.accent}}>{PRODUCTS.combo.icon(13)}</span>
+        <span style={{display:'flex',flexDirection:'column',gap:1}}><span>Trámite completo</span><span style={{fontSize:9.5,fontFamily:foliar.mono,letterSpacing:.3,color:product==='combo'?'rgba(255,255,255,.65)':foliar.inkMuted,textTransform:'uppercase'}}>3 en 1</span></span>
+        {product==='combo'&&<span style={{marginLeft:'auto',width:5,height:5,borderRadius:3,background:foliar.accent}}/>}
+      </div>
+    </nav></>}
+    {isVisor&&<div style={{padding:'6px 10px 18px',fontSize:11,color:foliar.inkMuted,fontStyle:'italic'}}>Modo lectura — solo consulta</div>}
+    <div style={{fontSize:10,color:foliar.inkMuted,fontFamily:foliar.mono,letterSpacing:.5,textTransform:'uppercase',padding:'22px 10px 8px',fontWeight:500}}>Biblioteca</div>
+    <nav style={{display:'flex',flexDirection:'column',gap:2}}>
+      {[{id:'historial',label:'Historial',icon:<ClockIcon size={13}/>},...(!isVisor&&user&&user.rol==='Admin'?[{id:'estadisticas',label:'Estadísticas',icon:<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="9" width="3" height="6" rx="1"/><rect x="6" y="5" width="3" height="10" rx="1"/><rect x="11" y="1" width="3" height="14" rx="1"/></svg>}]:[]),{id:'equipo',label:'Equipo',icon:<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><circle cx="6" cy="6" r="2.2"/><path d="M2.5 13c0-1.9 1.6-3.5 3.5-3.5s3.5 1.6 3.5 3.5"/><circle cx="11.5" cy="6.5" r="1.8"/><path d="M10.2 13c0-1.5 1.3-2.8 2.8-2.8"/></svg>},...(isVisor?[]:[{id:'batch',label:'Lote',icon:<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="5" width="10" height="8" rx="1"/><path d="M3.5 5V3.5A1.5 1.5 0 015 2h8a1.5 1.5 0 011.5 1.5v8A1.5 1.5 0 0113 13H11.5"/><path d="M3.5 9h5M3.5 11.5h3"/></svg>}])].map(i=>{const on=activeLib===i.id;return <div key={i.id} onClick={()=>go(i.id)} style={{display:'flex',alignItems:'center',gap:10,padding:'7px 10px',borderRadius:foliar.radius.sm,background:on?foliar.surface:'transparent',border:`1px solid ${on?foliar.line:'transparent'}`,cursor:'pointer',color:on?foliar.ink:foliar.inkSoft,fontSize:12.5,fontWeight:on?500:400}}><span style={{opacity:on?1:.6,display:'flex',color:on?foliar.accent:foliar.inkSoft}}>{i.icon}</span><span>{i.label}</span></div>;})}
+      {user&&user.rol==='Admin'&&(()=>{const on=activeLib==='config';return <div onClick={()=>go('config')} style={{display:'flex',alignItems:'center',gap:10,padding:'7px 10px',borderRadius:foliar.radius.sm,background:on?foliar.surface:'transparent',border:`1px solid ${on?foliar.line:'transparent'}`,cursor:'pointer',color:on?foliar.ink:foliar.inkSoft,fontSize:12.5,fontWeight:on?500:400,marginTop:4}}><span style={{opacity:on?1:.6,display:'flex',color:on?foliar.accent:foliar.inkSoft}}><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="8" r="2.2"/><path d="M8 1.5v1.2M8 13.3v1.2M1.5 8h1.2M13.3 8h1.2M3.3 3.3l.85.85M11.85 11.85l.85.85M3.3 12.7l.85-.85M11.85 4.15l.85-.85"/></svg></span><span>Configuración</span></div>;})()}
+    </nav>
+    <div style={{flex:1}}/>
+    <div style={{padding:'10px',borderTop:`1px solid ${foliar.line}`}}>
+      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
+        <div style={{width:26,height:26,borderRadius:13,background:foliar.accent,color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:600}}>{initials}</div>
+        <div style={{flex:1,minWidth:0}}><div style={{fontSize:11.5,color:foliar.ink,fontWeight:500,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{user?user.username:'—'}</div><div style={{fontSize:10,color:foliar.inkMuted,fontFamily:foliar.mono}}>{user?user.rol||'Editor':'—'}</div></div>
+      </div>
+      <div style={{display:'flex',gap:6,marginTop:2}}>
+        <button onClick={onLogout} style={{width:'100%',padding:'5px',background:'transparent',border:`1px solid ${foliar.line}`,borderRadius:foliar.radius.sm,fontSize:11,color:foliar.inkMuted,cursor:'pointer',fontFamily:foliar.font}}>Cerrar sesión</button>
+      </div>
+    </div>
+  </aside>;
+}
+
+// ── Shell ──
+function Shell({step,children,hideStepper,product='formulario',setProduct,go,activeLib,user,onLogout}){
+  return <div style={{height:'100vh',display:'flex',background:foliar.canvas}}>
+    <ProductSidebar product={product} setProduct={setProduct} go={go} activeLib={activeLib} user={user} onLogout={onLogout}/>
+    <main style={{flex:1,minWidth:0,display:'flex',flexDirection:'column'}}>
+      {!hideStepper&&<div style={{padding:'14px 28px',borderBottom:`1px solid ${foliar.line}`,display:'flex',alignItems:'center',justifyContent:'space-between'}}><Stepper step={step} product={product}/><div style={{fontSize:11,color:foliar.inkMuted,fontFamily:foliar.mono}}>{PRODUCTS[product]?.label?.toLowerCase()}</div></div>}
+      {children}
+    </main>
+  </div>;
+}
+
+// ── LoginEntry ──
+function LoginEntry({onLogin}){
+  const [id,setId]=React.useState('');
+  const [pwd,setPwd]=React.useState('');
+  const [loading,setLoading]=React.useState(false);
+  const [error,setError]=React.useState(null);
+  const [showPwd,setShowPwd]=React.useState(false);
+
+  const submit=async(e)=>{
+    e?.preventDefault?.();
+    setError(null);
+    if(!id||!pwd){setError('Completá tus credenciales.');return;}
+    setLoading(true);
+    try{
+      const fd=new FormData(); fd.append('identifier',id); fd.append('password',pwd);
+      const r=await fetch('/auth/login',{method:'POST',body:fd,credentials:'include'});
+      const data=await r.json();
+      if(data.ok){onLogin({username:data.username,rol:data.rol||'Editor'});}
+      else{setError(data.error||'Credenciales incorrectas.');}
+    }catch{setError('Error de conexión.');}
+    finally{setLoading(false);}
+  };
+
+  const inp={width:'100%',padding:'11px 12px',border:`1.5px solid ${error?'#C86B5E':foliar.line}`,borderRadius:foliar.radius.sm,fontSize:13,color:foliar.ink,background:foliar.surface,outline:'none',boxSizing:'border-box'};
+  return <div style={{height:'100vh',display:'grid',gridTemplateColumns:'1.05fr 1fr',background:foliar.canvas}}>
+    <div style={{background:foliar.ink,color:'#fff',padding:'32px 44px',display:'flex',flexDirection:'column',position:'relative',overflow:'hidden'}}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+        <FoliarLogo size={22} color="#fff"/>
+        <div style={{fontSize:10.5,color:'rgba(255,255,255,.5)',fontFamily:foliar.mono,letterSpacing:.4,padding:'4px 10px',border:'1px solid rgba(255,255,255,.18)',borderRadius:999}}>ACCESO PRIVADO</div>
+      </div>
+      <div style={{flex:1,display:'flex',flexDirection:'column',justifyContent:'center',maxWidth:480}}>
+        <div style={{fontSize:11,color:'rgba(255,255,255,.55)',fontFamily:foliar.mono,letterSpacing:.4,marginBottom:18,textTransform:'uppercase',fontWeight:500}}>— plataforma interna</div>
+        <h1 style={{fontSize:38,fontWeight:600,letterSpacing:-1,lineHeight:1.1,color:'#fff',margin:0}}>Un agente que lee tus PDFs y los convierte en formularios, telegramas y escritos.</h1>
+        <div style={{marginTop:32,padding:'18px 20px',background:'rgba(255,255,255,.05)',borderRadius:foliar.radius.md,border:'1px solid rgba(255,255,255,.12)',display:'flex',gap:14,alignItems:'flex-start'}}>
+          <div style={{width:28,height:28,borderRadius:14,background:'rgba(255,255,255,.08)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,color:'#fff'}}><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><rect x="3" y="7" width="10" height="7" rx="1.2"/><path d="M5 7V5a3 3 0 016 0v2"/></svg></div>
+          <div><div style={{fontSize:13,fontWeight:500,color:'#fff'}}>Solo usuarios autorizados</div><div style={{fontSize:12,color:'rgba(255,255,255,.65)',marginTop:4,lineHeight:1.5}}>Foliar no tiene registro abierto. Las cuentas se crean desde el panel de administración.</div></div>
+        </div>
+      </div>
+      <div style={{fontSize:10.5,color:'rgba(255,255,255,.4)',fontFamily:foliar.mono}}>v2.4 · Buenos Aires</div>
+    </div>
+    <div style={{padding:'56px 64px',display:'flex',flexDirection:'column',justifyContent:'center',maxWidth:520}}>
+      <h2 style={{fontSize:28,fontWeight:600,letterSpacing:-.7,margin:0,color:foliar.ink,lineHeight:1.15}}>Iniciar sesión</h2>
+      <p style={{fontSize:13.5,color:foliar.inkSoft,marginTop:8,lineHeight:1.55}}>Usá las credenciales que te asignó tu administrador.</p>
+      <form onSubmit={submit} style={{display:'flex',flexDirection:'column',gap:14,marginTop:26}}>
+        <div><div style={{fontSize:11,color:foliar.inkSoft,fontWeight:500,marginBottom:5}}>Email o usuario</div><input type="text" value={id} onChange={e=>{setId(e.target.value);setError(null);}} placeholder="nombre@estudio.com.ar" autoComplete="username" style={inp}/></div>
+        <div><div style={{display:'flex',justifyContent:'space-between',marginBottom:5}}><div style={{fontSize:11,color:foliar.inkSoft,fontWeight:500}}>Contraseña</div><span onClick={()=>setShowPwd(!showPwd)} style={{fontSize:11,color:foliar.accent,cursor:'pointer',userSelect:'none'}}>{showPwd?'Ocultar':'Mostrar'}</span></div><input type={showPwd?'text':'password'} value={pwd} onChange={e=>{setPwd(e.target.value);setError(null);}} placeholder="••••••••••" autoComplete="current-password" style={{...inp,fontFamily:foliar.mono}}/></div>
+        {error&&<div style={{padding:'10px 12px',background:'#FBEDE9',border:'1px solid #E9BFB4',borderRadius:foliar.radius.sm,fontSize:12,color:'#8B3A2D'}}>{error}</div>}
+        <Button variant="primary" size="lg" type="submit" onClick={submit} iconRight={!loading&&<ArrowIcon size={13}/>}>{loading?'Verificando…':'Entrar a Foliar'}</Button>
+      </form>
+    </div>
+  </div>;
+}
+
+// ── UploadScreen ──
+function UploadScreen({go,product,setProduct,combo,setCombo,setToken,setUploadedFile,user,onLogout}){
+  const [dragOver,setDragOver]=React.useState(false);
+  const [file,setFile]=React.useState(null);
+  const [loading,setLoading]=React.useState(false);
+  const [error,setError]=React.useState(null);
+  const fileRef=React.useRef();
+
+  if(product==='combo') return <UploadComboScreen go={go} product={product} setProduct={setProduct} combo={combo} setCombo={setCombo} setToken={setToken} setUploadedFile={setUploadedFile} user={user} onLogout={onLogout}/>;
+
+  const handleFile=f=>{if(f&&f.type==='application/pdf'){setFile(f);setError(null);}else{setError('Por favor seleccioná un archivo PDF.');}};
+
+  const startProcessing=async()=>{
+    if(!file){setError('Seleccioná un PDF.');return;}
+    setLoading(true);
+    try{
+      const fd=new FormData(); fd.append('pdf',file);
+      if(product&&product!=='formulario') fd.append('products',product);
+      const r=await fetch('/api/start',{method:'POST',body:fd,credentials:'include'});
+      const data=await r.json();
+      if(data.token){setToken(data.token);setUploadedFile(file.name);go('processing');}
+      else{setError(data.error||'Error al iniciar el procesamiento.');}
+    }catch{setError('Error de conexión.');}
+    finally{setLoading(false);}
+  };
+
+  return <Shell step={0} product={product} setProduct={setProduct} go={go} user={user} onLogout={onLogout}>
+    <div style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center',padding:24}}>
+      <div style={{width:'100%',maxWidth:580}}>
+        <div style={{fontSize:11,color:foliar.accent,fontFamily:foliar.mono,letterSpacing:.3,marginBottom:6}}>Paso 1 de 4</div>
+        <h1 style={{fontSize:26,fontWeight:600,letterSpacing:-.6,margin:0,color:foliar.ink}}>Subí el documento de origen</h1>
+        <p style={{fontSize:13.5,color:foliar.inkSoft,marginTop:8,lineHeight:1.5}}>El agente leerá el PDF y preparará tu <b>{PRODUCTS[product].label.toLowerCase()}</b>.</p>
+        <input ref={fileRef} type="file" accept=".pdf" style={{display:'none'}} onChange={e=>handleFile(e.target.files[0])}/>
+        {file?(
+          <div style={{marginTop:20,padding:14,background:foliar.surface,border:`1px solid ${foliar.line}`,borderRadius:foliar.radius.md,display:'flex',alignItems:'center',gap:12}}>
+            <div style={{width:38,height:46,background:foliar.accentPale,color:foliar.accent,border:`1px solid ${foliar.line}`,borderRadius:3,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}><FileIcon size={15}/></div>
+            <div style={{flex:1,minWidth:0}}><div style={{fontSize:13,fontWeight:500,color:foliar.ink}}>{file.name}</div><div style={{fontSize:11,color:foliar.inkMuted,fontFamily:foliar.mono,marginTop:2}}>{(file.size/1024/1024).toFixed(1)} MB</div></div>
+            <button onClick={()=>setFile(null)} style={{background:'transparent',border:'none',color:foliar.inkMuted,fontSize:16,cursor:'pointer',padding:6}}>×</button>
+          </div>
+        ):(
+          <div onDragEnter={e=>{e.preventDefault();setDragOver(true);}} onDragLeave={()=>setDragOver(false)} onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();setDragOver(false);const f=e.dataTransfer.files[0];handleFile(f);}} onClick={()=>fileRef.current.click()} style={{marginTop:16,padding:'50px 20px',textAlign:'center',background:dragOver?foliar.accentPale:foliar.surface,border:`1.5px dashed ${dragOver?foliar.accent:foliar.lineStrong}`,borderRadius:foliar.radius.lg,cursor:'pointer',transition:'background .15s,border-color .15s'}}>
+            <div style={{width:52,height:52,margin:'0 auto 14px',background:foliar.accentPale,color:foliar.accent,borderRadius:26,display:'flex',alignItems:'center',justifyContent:'center'}}><UploadIcon size={22} stroke={1.8}/></div>
+            <div style={{fontSize:15.5,fontWeight:500,color:foliar.ink}}>Arrastrá un PDF acá</div>
+            <div style={{fontSize:12,color:foliar.inkMuted,marginTop:4}}>o seleccionalo · máx. 25 MB</div>
+            <div style={{display:'flex',gap:8,justifyContent:'center',marginTop:18}}><Button variant="primary" size="sm" icon={<UploadIcon size={12}/>} onClick={e=>{e.stopPropagation();fileRef.current.click();}}>Elegir archivo</Button></div>
+          </div>
+        )}
+        {error&&<div style={{marginTop:10,padding:'10px 12px',background:'#FBEDE9',border:'1px solid #E9BFB4',borderRadius:foliar.radius.sm,fontSize:12,color:'#8B3A2D'}}>{error}</div>}
+        <div style={{marginTop:16,display:'flex',justifyContent:'flex-end'}}>
+          <Button variant="primary" size="lg" onClick={startProcessing} disabled={!file||loading} iconRight={<ArrowIcon size={13}/>}>{loading?'Iniciando…':'Procesar documento'}</Button>
+        </div>
+        <div style={{marginTop:12,display:'flex',gap:10,alignItems:'center',justifyContent:'center'}}>
+          <span style={{fontSize:11,color:foliar.inkMuted,display:'flex',alignItems:'center',gap:5}}><span style={{width:5,height:5,borderRadius:3,background:foliar.success}}/> Cifrado en tránsito y reposo</span>
+          <span style={{fontSize:11,color:foliar.inkMuted}}>No entrenamos modelos con tus documentos</span>
+        </div>
+      </div>
+    </div>
+  </Shell>;
+}
+
+// ── UploadComboScreen ──
+function UploadComboScreen({go,product,setProduct,combo,setCombo,setToken,setUploadedFile,user,onLogout}){
+  const [dragOver,setDragOver]=React.useState(false);
+  const [file,setFile]=React.useState(null);
+  const [loading,setLoading]=React.useState(false);
+  const [error,setError]=React.useState(null);
+  const fileRef=React.useRef();
+  const order=['formulario','telegrama','escrito'];
+  const toggle=k=>{
+    if(k==='formulario')return; // formulario siempre incluido
+    if(combo.includes(k)){setCombo(combo.filter(x=>x!==k));}
+    else{setCombo([...order.filter(x=>combo.includes(x)||x===k)]);}
+  };
+  const handleFile=f=>{if(f&&f.type==='application/pdf'){setFile(f);setError(null);}else{setError('Seleccioná un PDF.');}};
+
+  const startProcessing=async()=>{
+    if(!file){setError('Seleccioná un PDF.');return;}
+    setLoading(true);
+    try{
+      const fd=new FormData(); fd.append('pdf',file);
+      fd.append('products',combo.join(','));
+      const r=await fetch('/api/start',{method:'POST',body:fd,credentials:'include'});
+      const data=await r.json();
+      if(data.token){setToken(data.token);setUploadedFile(file.name);go('processing');}
+      else{setError(data.error||'Error al iniciar.');}
+    }catch{setError('Error de conexión.');}
+    finally{setLoading(false);}
+  };
+
+  return <Shell step={0} product={product} setProduct={setProduct} go={go} user={user} onLogout={onLogout}>
+    <div style={{flex:1,overflow:'auto',padding:'36px 40px'}}>
+      <div style={{maxWidth:980,margin:'0 auto'}}>
+        <div style={{fontSize:11,color:foliar.accent,fontFamily:foliar.mono,letterSpacing:.3,marginBottom:6}}>Paso 1 de 4 · trámite completo</div>
+        <h1 style={{fontSize:28,fontWeight:600,letterSpacing:-.7,margin:0,color:foliar.ink}}>Subí un PDF y elegí los documentos</h1>
+        <p style={{fontSize:13.5,color:foliar.inkSoft,margin:'8px 0 0',lineHeight:1.5,maxWidth:620}}>El agente lee el PDF una sola vez y prepara los documentos en <b>paralelo</b>.</p>
+        <input ref={fileRef} type="file" accept=".pdf" style={{display:'none'}} onChange={e=>handleFile(e.target.files[0])}/>
+        <div style={{marginTop:26,display:'grid',gridTemplateColumns:'1fr 1fr',gap:20}}>
+          <div>
+            <div style={{fontSize:11,color:foliar.inkMuted,fontFamily:foliar.mono,letterSpacing:.3,textTransform:'uppercase',fontWeight:500,marginBottom:10}}>1 · Documento de origen</div>
+            {file?(
+              <div style={{padding:14,background:foliar.surface,border:`1px solid ${foliar.line}`,borderRadius:foliar.radius.md,display:'flex',alignItems:'center',gap:12}}>
+                <div style={{width:38,height:46,background:foliar.accentPale,color:foliar.accent,border:`1px solid ${foliar.line}`,borderRadius:3,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}><FileIcon size={15}/></div>
+                <div style={{flex:1,minWidth:0}}><div style={{fontSize:13,fontWeight:500,color:foliar.ink}}>{file.name}</div><div style={{fontSize:11,color:foliar.inkMuted,fontFamily:foliar.mono,marginTop:2}}>{(file.size/1024/1024).toFixed(1)} MB</div></div>
+                <button onClick={()=>setFile(null)} style={{background:'transparent',border:'none',color:foliar.inkMuted,fontSize:16,cursor:'pointer',padding:6}}>×</button>
+              </div>
+            ):(
+              <div onDragEnter={e=>{e.preventDefault();setDragOver(true);}} onDragLeave={()=>setDragOver(false)} onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();setDragOver(false);handleFile(e.dataTransfer.files[0]);}} onClick={()=>fileRef.current.click()} style={{padding:'46px 20px',textAlign:'center',background:dragOver?foliar.accentPale:foliar.surface,border:`1.5px dashed ${dragOver?foliar.accent:foliar.lineStrong}`,borderRadius:foliar.radius.lg,cursor:'pointer',transition:'background .15s,border-color .15s'}}>
+                <div style={{width:48,height:48,margin:'0 auto 12px',background:foliar.accentPale,color:foliar.accent,borderRadius:24,display:'flex',alignItems:'center',justifyContent:'center'}}><UploadIcon size={20} stroke={1.8}/></div>
+                <div style={{fontSize:14.5,fontWeight:500,color:foliar.ink}}>Arrastrá un PDF</div>
+                <div style={{fontSize:11.5,color:foliar.inkMuted,marginTop:4}}>o seleccionalo · máx. 25 MB</div>
+                <div style={{display:'flex',gap:8,justifyContent:'center',marginTop:16}}><Button variant="primary" size="sm" icon={<UploadIcon size={12}/>} onClick={e=>{e.stopPropagation();fileRef.current.click();}}>Elegir archivo</Button></div>
+              </div>
+            )}
+          </div>
+          <div>
+            <div style={{fontSize:11,color:foliar.inkMuted,fontFamily:foliar.mono,letterSpacing:.3,textTransform:'uppercase',fontWeight:500,marginBottom:10}}>2 · Documentos a generar ({combo.length}/3)</div>
+            <div style={{display:'flex',flexDirection:'column',gap:8}}>
+              {order.map(k=>{const p=PRODUCTS[k];const on=combo.includes(k);return <div key={k} onClick={()=>toggle(k)} style={{padding:'12px 14px',background:foliar.surface,border:`1.5px solid ${on?foliar.accent:foliar.line}`,borderRadius:foliar.radius.md,cursor:'pointer',display:'flex',alignItems:'center',gap:12,transition:'border-color .12s'}}><span style={{width:18,height:18,borderRadius:4,flexShrink:0,border:`1.5px solid ${on?foliar.accent:foliar.lineStrong}`,background:on?foliar.accent:foliar.surface,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff'}}>{on&&<CheckIcon size={11}/>}</span><span style={{display:'flex',color:on?foliar.accent:foliar.inkSoft}}>{p.icon(15)}</span><div style={{flex:1}}><div style={{fontSize:13.5,fontWeight:500,color:foliar.ink}}>{p.label}</div></div></div>;})}
+            </div>
+          </div>
+        </div>
+        {error&&<div style={{marginTop:10,padding:'10px 12px',background:'#FBEDE9',border:'1px solid #E9BFB4',borderRadius:foliar.radius.sm,fontSize:12,color:'#8B3A2D'}}>{error}</div>}
+        <div style={{marginTop:28,padding:'14px 18px',background:foliar.ink,color:'#fff',borderRadius:foliar.radius.md,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+          <div style={{fontSize:11,fontFamily:foliar.mono,color:'rgba(255,255,255,.65)'}}>Se generarán: {combo.map(k=>PRODUCTS[k].label).join(', ')}</div>
+          <Button variant="primary" iconRight={<ArrowIcon size={12}/>} disabled={!file||loading||combo.length===0} onClick={startProcessing}>{loading?'Iniciando…':`Generar ${combo.length} documento${combo.length===1?'':'s'}`}</Button>
+        </div>
+      </div>
+    </div>
+  </Shell>;
+}
+
+// ── ProcessingScreen ──
+function ProcessingScreen({go,product,setProduct,combo,token,uploadedFile,setExtractedFields,setComboStatus,user,onLogout}){
+  const [progress,setProgress]=React.useState(0);
+  const [stage,setStage]=React.useState('Iniciando…');
+  const [error,setError]=React.useState(null);
+  const [elapsed,setElapsed]=React.useState(0);
+  const [liveFields,setLiveFields]=React.useState([]);
+  const [reconnecting,setReconnecting]=React.useState(false);
+  const reconnectRef=React.useRef(0);  // contador de reconexiones fallidas
+  const MAX_RECONNECTS=6;
+  const isCombo=product==='combo';
+
+  React.useEffect(()=>{
+    if(!token)return;
+    const es=new EventSource(`/api/stream/${token}`);
+    es.onmessage=e=>{
+      try{
+        const msg=JSON.parse(e.data);
+        // Reconexión exitosa → limpiar estado de error transitorio
+        if(msg.type!=='keepalive'){reconnectRef.current=0;setReconnecting(false);}
+        if(msg.type==='progress'){setProgress(msg.pct||0);setStage(msg.stage||'Procesando…');}
+        if(msg.type==='field'){setLiveFields(prev=>{const next=[...prev,{label:msg.field,value:msg.value,conf:msg.confidence||0.9}];return next.slice(-8);});}
+        if(msg.type==='combo_progress'){setComboStatus(s=>({...s,[msg.doc]:'processing'}));}
+        if(msg.type==='combo_done'){setComboStatus(s=>({...s,[msg.doc]:'done'}));}
+        if(msg.type==='done'){setExtractedFields(msg.fields||{});setComboStatus(s=>({...s,formulario:'done'}));es.close();go('review');}
+        if(msg.type==='error'){setError(msg.message||'Error desconocido.');es.close();}
+      }catch{}
+    };
+    es.onerror=()=>{
+      reconnectRef.current+=1;
+      if(reconnectRef.current>=MAX_RECONNECTS){
+        // Demasiados intentos fallidos → error definitivo
+        setError('No se pudo conectar con el servidor después de varios intentos. Verificá tu conexión a la red y volvé a intentarlo.');
+        es.close();
+      } else {
+        // Mostrar estado de reconexión — EventSource reintenta automáticamente
+        setReconnecting(true);
+        // No cerrar: EventSource se reconecta solo en ~3s
+      }
+    };
+    const et=setInterval(()=>setElapsed(x=>x+1),1000);
+    return()=>{es.close();clearInterval(et);};
+  },[token]);
+
+  if(error) return <Shell step={1} product={product} setProduct={setProduct} go={go} user={user} onLogout={onLogout}>
+    <div style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:16,padding:24}}>
+      <div style={{width:48,height:48,borderRadius:24,background:'#F3E3E1',display:'flex',alignItems:'center',justifyContent:'center',color:foliar.danger,fontSize:22}}>✕</div>
+      <div style={{fontSize:15,fontWeight:500,color:foliar.ink,textAlign:'center',maxWidth:420}}>{error}</div>
+      <div style={{fontSize:12,color:foliar.inkMuted,textAlign:'center',maxWidth:380}}>El archivo original ya no necesita volver a subirse — hacé clic en "Intentar de nuevo" para reintentar con el mismo documento.</div>
+      <Button variant="primary" onClick={()=>go('upload')}>Intentar de nuevo</Button>
+    </div>
+  </Shell>;
+
+  const pct=Math.round((isCombo?0.5:progress)*100);
+  const stages=['Leyendo páginas y extrayendo texto','Detectando secciones y campos','Mapeando datos al formulario','Validando coherencia','Armando documento firmable'];
+  const stageIdx=progress<.18?0:progress<.32?1:progress<.82?2:progress<.95?3:4;
+
+  return <Shell step={1} product={product} setProduct={setProduct} go={go} user={user} onLogout={onLogout}>
+    <div style={{flex:1,display:'grid',gridTemplateColumns:'1.1fr 1fr',minHeight:0}}>
+      <div style={{padding:'32px 36px',borderRight:`1px solid ${foliar.line}`,display:'flex',flexDirection:'column'}}>
+        <div style={{fontSize:11,color:foliar.accent,fontFamily:foliar.mono,letterSpacing:.3,marginBottom:6}}>Paso 2 de 4</div>
+        <h1 style={{fontSize:26,fontWeight:600,letterSpacing:-.6,margin:0,color:foliar.ink}}>El agente está procesando tu documento</h1>
+        <p style={{fontSize:13,color:foliar.inkSoft,marginTop:8,fontFamily:foliar.mono}}>{uploadedFile||'documento.pdf'}</p>
+        {reconnecting&&<div style={{marginTop:16,padding:'10px 14px',background:'#FFF6E5',border:'1px solid #E8DCB7',borderRadius:foliar.radius.sm,display:'flex',alignItems:'center',gap:10,fontSize:12,color:foliar.warn}}>
+          <span style={{width:12,height:12,borderRadius:6,border:`1.5px solid ${foliar.warn}`,borderTopColor:'transparent',animation:'foliar-spin 1s linear infinite',display:'block',flexShrink:0}}/>
+          Reconectando con el servidor… ({reconnectRef.current}/{MAX_RECONNECTS})
+        </div>}
+        <div style={{marginTop:reconnecting?10:26,padding:'18px 20px',background:foliar.surface,border:`1px solid ${foliar.line}`,borderRadius:foliar.radius.lg}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',marginBottom:10}}>
+            <div style={{fontSize:32,fontWeight:600,letterSpacing:-1,color:foliar.ink,fontFamily:foliar.mono}}>{Math.round(progress*100)}<span style={{fontSize:18,color:foliar.inkMuted}}>%</span></div>
+            <div style={{fontSize:11,color:foliar.inkMuted,fontFamily:foliar.mono,textAlign:'right'}}><div>{elapsed}s transcurridos</div><div style={{marginTop:2}}>{stage}</div></div>
+          </div>
+          <div style={{height:6,background:foliar.surfaceSunken,borderRadius:3,overflow:'hidden'}}><div style={{width:`${progress*100}%`,height:'100%',background:`linear-gradient(90deg,${foliar.accent},${foliar.accentSoft})`,transition:'width .3s'}}/></div>
+        </div>
+        <div style={{marginTop:20,display:'flex',flexDirection:'column',gap:2}}>
+          {stages.map((s,i)=>{const done=i<stageIdx;const active=i===stageIdx;return <div key={i} style={{display:'flex',alignItems:'center',gap:12,padding:'10px 2px',borderBottom:i<stages.length-1?`1px solid ${foliar.lineSoft}`:'none'}}><div style={{width:18,height:18,borderRadius:10,flexShrink:0,background:done?foliar.accent:active?foliar.surface:foliar.surfaceSoft,border:`1px solid ${done||active?foliar.accent:foliar.line}`,display:'flex',alignItems:'center',justifyContent:'center'}}>{done&&<CheckIcon size={10} stroke={2.4}/>}{active&&<span style={{width:6,height:6,borderRadius:3,background:foliar.accent,animation:'foliar-pulse 1.2s infinite'}}/>}</div><div style={{fontSize:13,color:done?foliar.inkSoft:active?foliar.ink:foliar.inkMuted,fontWeight:active?500:400}}>{s}</div></div>;})}
+        </div>
+        <div style={{marginTop:'auto',paddingTop:20}}><Button variant="ghost" size="sm" onClick={()=>go('upload')}>Cancelar</Button></div>
+      </div>
+      <div style={{padding:'32px 28px',background:foliar.surfaceSoft,display:'flex',flexDirection:'column',overflow:'hidden'}}>
+        <div style={{fontSize:11,color:foliar.inkMuted,fontFamily:foliar.mono,letterSpacing:.3,marginBottom:12}}>Vista previa en vivo</div>
+        <div style={{flex:1,minHeight:0,overflow:'auto',display:'flex',flexDirection:'column',gap:8,paddingTop:4}}>
+          {liveFields.length===0?<PdfPage highlight={stageIdx}/>:liveFields.map((f,i)=><AgentField key={i} label={f.label.length>40?f.label.slice(0,40)+'…':f.label} value={f.value} state={i===liveFields.length-1?'filling':'filled'} confidence={f.conf}/>)}
+        </div>
+      </div>
+    </div>
+  </Shell>;
+}
+
+// ── ReviewScreen ──
+function ReviewScreen({go,product,setProduct,extractedFields,edits,setEdits,token,user,onLogout}){
+  const [openField,setOpenField]=React.useState(null);
+  const [filter,setFilter]=React.useState('all');
+  const [saving,setSaving]=React.useState(false);
+
+  const continuar=async()=>{
+    if(Object.keys(edits).length>0&&token&&(product==='formulario'||product==='combo')){
+      setSaving(true);
+      try{await fetch(`/api/apply_edits/${token}`,{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify(edits)});}catch{}
+      setSaving(false);
+    }
+    go('done');
+  };
+
+  const allEntries=Object.entries(extractedFields||{});
+  const knownKeys=REVIEW_SECTIONS.flatMap(s=>s.keys);
+  const unknownKeys=allEntries.map(([k])=>k).filter(k=>!knownKeys.includes(k));
+  const otherSection=unknownKeys.length>0?[{title:'Otros campos',keys:unknownKeys}]:[];
+  const allSections=[...REVIEW_SECTIONS,...otherSection].filter(s=>s.keys.some(k=>extractedFields[k]));
+
+  const warnCount=allEntries.filter(([,v])=>v.confidence<0.85).length;
+  const editCount=Object.keys(edits).length;
+
+  const visible=([k,v])=>{
+    if(filter==='all') return true;
+    if(filter==='review') return v.confidence<0.85;
+    if(filter==='edited') return edits[k]!==undefined;
+    return true;
+  };
+
+  return <Shell step={2} product={product} setProduct={setProduct} go={go} user={user} onLogout={onLogout}>
+    <div style={{flex:1,display:'grid',gridTemplateColumns:'340px 1fr',minHeight:0}}>
+      <div style={{background:foliar.surfaceSunken,borderRight:`1px solid ${foliar.line}`,padding:16,display:'flex',flexDirection:'column',overflow:'hidden'}}>
+        <div style={{fontSize:11,color:foliar.inkMuted,fontFamily:foliar.mono,letterSpacing:.3,marginBottom:10}}>Documento de origen</div>
+        <div style={{flex:1,minHeight:0}}><PdfPage/></div>
+      </div>
+      <div style={{display:'flex',flexDirection:'column',minHeight:0}}>
+        <div style={{padding:'16px 28px 10px',borderBottom:`1px solid ${foliar.line}`}}>
+          <div style={{display:'flex',alignItems:'flex-end',justifyContent:'space-between',marginBottom:12}}>
+            <div><div style={{fontSize:11,color:foliar.accent,fontFamily:foliar.mono,letterSpacing:.3,marginBottom:2}}>Paso 3 de 4 · Revisar</div><h1 style={{fontSize:20,fontWeight:600,letterSpacing:-.4,margin:0,color:foliar.ink}}>Campos extraídos</h1></div>
+            <div style={{display:'flex',gap:12,alignItems:'center',fontSize:11.5}}>
+              <div style={{display:'flex',alignItems:'center',gap:5}}><span style={{width:6,height:6,borderRadius:3,background:foliar.conf.high}}/><span style={{color:foliar.inkSoft}}>{allEntries.length-warnCount} completos</span></div>
+              {warnCount>0&&<div style={{display:'flex',alignItems:'center',gap:5}}><span style={{width:6,height:6,borderRadius:3,background:foliar.warn}}/><span style={{color:foliar.inkSoft}}>{warnCount} a revisar</span></div>}
+            </div>
+          </div>
+          <div style={{display:'flex',gap:4,background:foliar.surfaceSoft,border:`1px solid ${foliar.line}`,borderRadius:999,padding:3,width:'fit-content'}}>
+            {[['all','Todos',allEntries.length],['review','A revisar',warnCount],['edited','Editados',editCount]].map(([id,label,count])=><button key={id} onClick={()=>setFilter(id)} style={{padding:'4px 12px',borderRadius:999,border:'none',cursor:'pointer',background:filter===id?foliar.surface:'transparent',boxShadow:filter===id?foliar.shadow1:'none',fontSize:11.5,fontWeight:filter===id?500:400,color:foliar.ink,display:'flex',alignItems:'center',gap:6,fontFamily:foliar.font}}>{label}<span style={{color:foliar.inkMuted,fontFamily:foliar.mono,fontSize:10}}>{count}</span></button>)}
+          </div>
+        </div>
+        <div style={{padding:'18px 28px',overflow:'auto',minHeight:0,flex:1}}>
+          {allEntries.length===0&&<div style={{padding:'40px',textAlign:'center',color:foliar.inkMuted,fontSize:13}}>No se extrajeron campos. Verificá el PDF de origen.</div>}
+          {allSections.map((sec,si)=>{
+            const fields=sec.keys.map(k=>[k,edits[k]!==undefined?{value:edits[k],confidence:1}:(extractedFields[k]||null)]).filter(([,v])=>v).filter(visible);
+            if(fields.length===0) return null;
+            return <div key={si} style={{marginBottom:20}}>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',paddingBottom:7,borderBottom:`1px solid ${foliar.line}`,marginBottom:10}}><div style={{fontSize:12.5,fontWeight:600,color:foliar.ink}}>{sec.title}</div></div>
+              <div style={{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:10}}>
+                {fields.map(([k,v])=>{
+                  const edited=edits[k]!==undefined;
+                  const state=edited?'edited':v.confidence<0.85?'uncertain':'filled';
+                  return <div key={k} style={{cursor:'pointer'}} onClick={()=>setOpenField(k)}><AgentField label={k.replace(/_/g,' ')} value={edited?edits[k]:v.value} state={state} confidence={v.confidence}/></div>;
+                })}
+              </div>
+            </div>;
+          })}
+        </div>
+        <div style={{padding:'14px 28px',borderTop:`1px solid ${foliar.line}`,background:foliar.surface,display:'flex',justifyContent:'space-between'}}>
+          <Button variant="outline" onClick={()=>go('upload')}>Volver</Button>
+          <Button variant="primary" iconRight={!saving&&<ArrowIcon size={13}/>} onClick={continuar} disabled={saving}>{saving?'Aplicando ediciones…':'Continuar a descargar'}</Button>
+        </div>
+      </div>
+    </div>
+    {openField&&<FieldEditPanel fieldKey={openField} fieldData={extractedFields[openField]} edits={edits} setEdits={setEdits} onClose={()=>setOpenField(null)}/>}
+  </Shell>;
+}
+
+// ── FieldEditPanel ──
+function FieldEditPanel({fieldKey,fieldData,edits,setEdits,onClose}){
+  const [value,setValue]=React.useState(edits[fieldKey]!==undefined?edits[fieldKey]:(fieldData?.value||''));
+  React.useEffect(()=>{
+    const onKey=e=>{if(e.key==='Escape')onClose();};
+    window.addEventListener('keydown',onKey);
+    return()=>window.removeEventListener('keydown',onKey);
+  },[onClose]);
+  const save=()=>{setEdits(prev=>({...prev,[fieldKey]:value}));onClose();};
+  const isLong=fieldData?.value&&fieldData.value.length>80;
+  return <div style={{position:'fixed',inset:0,zIndex:60,display:'flex',justifyContent:'flex-end'}}>
+    <div onClick={onClose} style={{position:'absolute',inset:0,background:'rgba(38,33,28,.32)',backdropFilter:'blur(2px)',animation:'foliar-fade .2s ease'}}/>
+    <div style={{position:'relative',width:'min(600px,92vw)',height:'100%',background:foliar.surface,borderLeft:`1px solid ${foliar.line}`,boxShadow:'-12px 0 40px rgba(38,33,28,.18)',display:'flex',flexDirection:'column',animation:'foliar-drawer .26s cubic-bezier(.2,.8,.2,1)'}}>
+      <div style={{padding:'18px 24px',borderBottom:`1px solid ${foliar.line}`,display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:14}}>
+        <div><div style={{fontSize:11,color:foliar.inkMuted,fontFamily:foliar.mono,letterSpacing:.3,marginBottom:4}}>Editar campo</div><h2 style={{fontSize:18,fontWeight:600,letterSpacing:-.4,margin:0,color:foliar.ink}}>{fieldKey.replace(/_/g,' ')}</h2></div>
+        <div style={{display:'flex',gap:8,alignItems:'center',flexShrink:0}}>
+          {fieldData&&<ConfidenceBar value={fieldData.confidence}/>}
+          <button onClick={onClose} style={{width:28,height:28,borderRadius:14,border:`1px solid ${foliar.line}`,background:foliar.surface,color:foliar.inkSoft,cursor:'pointer',fontSize:14,display:'flex',alignItems:'center',justifyContent:'center'}}>×</button>
+        </div>
+      </div>
+      <div style={{flex:1,overflow:'auto',padding:'20px 24px'}}>
+        {fieldData&&fieldData.confidence<0.85&&<div style={{marginBottom:16,padding:'10px 12px',background:foliar.warnPale,border:'1px solid #E8DCB7',borderRadius:6,fontSize:12,color:foliar.warn,lineHeight:1.4}}><b>Baja confianza:</b> Verificá que este valor sea correcto antes de continuar.</div>}
+        <div style={{marginBottom:16,padding:'14px 16px',background:foliar.surfaceSoft,border:`1px solid ${foliar.line}`,borderRadius:foliar.radius.md}}>
+          <div style={{fontSize:10,color:foliar.accent,fontFamily:foliar.mono,letterSpacing:.4,marginBottom:6,textTransform:'uppercase',fontWeight:500}}>Valor extraído por el agente</div>
+          <div style={{fontSize:13,color:foliar.ink,fontWeight:500}}>{fieldData?.value||'—'}</div>
+        </div>
+        <div style={{fontSize:11,color:foliar.inkSoft,fontWeight:500,marginBottom:6}}>Editar valor</div>
+        {isLong?(
+          <textarea value={value} onChange={e=>setValue(e.target.value)} autoFocus style={{width:'100%',minHeight:100,padding:'10px 12px',border:`1.5px solid ${foliar.ink}`,borderRadius:foliar.radius.sm,fontSize:13,fontFamily:foliar.font,color:foliar.ink,background:foliar.surface,outline:'none',resize:'vertical',lineHeight:1.5,boxSizing:'border-box'}}/>
+        ):(
+          <input value={value} onChange={e=>setValue(e.target.value)} autoFocus style={{width:'100%',padding:'10px 12px',border:`1.5px solid ${foliar.ink}`,borderRadius:foliar.radius.sm,fontSize:13,color:foliar.ink,background:foliar.surface,outline:'none',boxSizing:'border-box'}}/>
+        )}
+        {edits[fieldKey]!==undefined&&<div style={{marginTop:14,padding:'8px 12px',background:foliar.surfaceSoft,border:`1px solid ${foliar.lineSoft}`,borderRadius:6,fontSize:11,color:foliar.inkSoft,fontFamily:foliar.mono}}>Valor guardado: {edits[fieldKey]}</div>}
+      </div>
+      <div style={{padding:'14px 24px',borderTop:`1px solid ${foliar.line}`,display:'flex',gap:8,justifyContent:'space-between',alignItems:'center',background:foliar.surfaceSoft}}>
+        <Button variant="ghost" size="sm" onClick={()=>{setValue(fieldData?.value||'');}}>Restaurar original</Button>
+        <div style={{display:'flex',gap:8}}><Button variant="outline" onClick={onClose}>Cancelar</Button><Button variant="primary" onClick={save} icon={<CheckIcon size={12}/>}>Guardar campo</Button></div>
+      </div>
+    </div>
+  </div>;
+}
+
+// ── DoneScreen ──
+function DoneScreen({go,product,setProduct,token,edits,combo,comboStatus,user,onLogout}){
+  const editCount=Object.keys(edits).length;
+  const isCombo=product==='combo';
+  const isSoloExtra=product==='telegrama'||product==='escrito';
+
+  const download=(doc)=>{
+    if(isCombo&&doc){window.open(`/api/combo/download/${token}/${doc}`,'_blank');}
+    else if(isCombo){window.open(`/api/combo/download/${token}/zip`,'_blank');}
+    else if(isSoloExtra){window.open(`/api/combo/download/${token}/${product}`,'_blank');}
+    else{window.open(`/api/download/${token}`,'_blank');}
+  };
+
+  return <Shell step={3} product={product} setProduct={setProduct} go={go} user={user} onLogout={onLogout}>
+    <div style={{flex:1,overflow:'auto',padding:'36px 40px'}}>
+      <div style={{maxWidth:780,margin:'0 auto'}}>
+        <div style={{width:44,height:44,background:foliar.accentPale,color:foliar.accent,borderRadius:22,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:16}}><CheckIcon size={20} stroke={2.2}/></div>
+        <div style={{fontSize:11,color:foliar.accent,fontFamily:foliar.mono,letterSpacing:.3,marginBottom:6}}>Paso 4 de 4</div>
+        <h1 style={{fontSize:30,fontWeight:600,letterSpacing:-.8,margin:0,color:foliar.ink,lineHeight:1.15}}>{isCombo?`${(combo||[]).length} documentos listos`:`Tu ${PRODUCTS[product]?.label?.toLowerCase()||'documento'} está listo`}</h1>
+        <p style={{fontSize:13.5,color:foliar.inkSoft,margin:'8px 0 0',lineHeight:1.5}}>{editCount>0?`${editCount} edición${editCount===1?'':'es'} manual${editCount===1?'':'es'}`:'Sin ediciones manuales'} · {new Date().toLocaleDateString('es-AR')}</p>
+        {isCombo?(
+          <div style={{marginTop:24}}>
+            <div style={{padding:'18px 22px',background:foliar.ink,color:'#fff',borderRadius:foliar.radius.md,display:'flex',alignItems:'center',gap:18,marginBottom:16}}>
+              <div style={{flex:1}}><div style={{fontSize:15,fontWeight:600}}>tramite_paquete.zip</div><div style={{fontSize:11.5,color:'rgba(255,255,255,.65)',marginTop:4,fontFamily:foliar.mono}}>{(combo||[]).length} archivos · firmado digitalmente</div></div>
+              <Button variant="primary" icon={<DownloadIcon size={13}/>} onClick={()=>download(null)}>Descargar paquete</Button>
+            </div>
+            <div style={{display:'flex',flexDirection:'column',gap:8}}>
+              {(combo||[]).map(k=><div key={k} style={{padding:'14px 18px',background:foliar.surface,border:`1px solid ${foliar.line}`,borderRadius:foliar.radius.md,display:'flex',alignItems:'center',gap:14}}>
+                <span style={{display:'flex',color:foliar.accent}}>{PRODUCTS[k].icon(16)}</span>
+                <div style={{flex:1}}><div style={{fontSize:13.5,fontWeight:500,color:foliar.ink}}>{PRODUCTS[k].label}</div><div style={{fontSize:11.5,color:foliar.inkMuted,marginTop:2}}>{comboStatus?.[k]==='done'?'Listo':'Procesando…'}</div></div>
+                {comboStatus?.[k]==='done'&&<Button variant="outline" size="sm" icon={<DownloadIcon size={12}/>} onClick={()=>download(k)}>Descargar</Button>}
+              </div>)}
+            </div>
+          </div>
+        ):(
+          <div style={{marginTop:24,padding:'20px 22px',background:foliar.surface,border:`1px solid ${foliar.line}`,borderRadius:foliar.radius.md}}>
+            <div style={{fontSize:13,color:foliar.inkSoft,marginBottom:16}}>Documento generado y listo para descargar.</div>
+            <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+              <Button variant="primary" size="md" icon={<DownloadIcon size={13}/>} onClick={()=>download(null)}>Descargar PDF</Button>
+              <Button variant="ghost" size="md" onClick={()=>{setProduct(product);go('upload');}}>Procesar otro</Button>
+            </div>
+          </div>
+        )}
+        <div style={{marginTop:24,paddingTop:20,borderTop:`1px solid ${foliar.line}`,display:'flex',gap:8,justifyContent:'flex-end'}}>
+          <Button variant="ghost" onClick={()=>go('historial')}>Ver historial</Button>
+          <Button variant="outline" onClick={()=>go('upload')}>Nuevo trámite</Button>
+        </div>
+      </div>
+    </div>
+  </Shell>;
+}
+
+// ── Notificaciones de escritorio ────────────────────────────────────────────
+function _foliarRequestNotif(){
+  if(typeof Notification==='undefined')return;
+  if(Notification.permission==='default')Notification.requestPermission();
+}
+function _foliarNotify(title,body=''){
+  if(typeof Notification==='undefined'||Notification.permission!=='granted')return;
+  try{new Notification(title,{body,icon:'/static/favicon.ico'});}catch{}
+}
+
+// ── Gráfico de barras SVG (últimos 7 días) ───────────────────────────────────
+function BarChart30({data}){
+  const days=Object.keys(data||{});
+  if(!days.length)return null;
+  const vals=days.map(d=>data[d]||0);
+  const maxVal=Math.max(...vals,1);
+  const VH=60,BAR_W=14,GAP=9,PAD=4;
+  const VW=days.length*(BAR_W+GAP)-GAP+PAD*2;
+  return <svg viewBox={`0 0 ${VW} ${VH+20}`} width="100%" style={{overflow:'visible',display:'block'}}>
+    {days.map((day,i)=>{
+      const v=vals[i];
+      const barH=Math.max(v/maxVal*VH,v>0?3:0);
+      const x=PAD+i*(BAR_W+GAP);
+      const isToday=i===days.length-1;
+      const showLabel=i===0||i===days.length-1||(i%6===0);
+      return <g key={day}>
+        <rect x={x} y={VH-barH} width={BAR_W} height={barH||1} fill={isToday?foliar.accent:foliar.accentPale} rx={3} opacity={v===0?0.35:1}/>
+        {v>0&&barH>16&&<text x={x+BAR_W/2} y={VH-barH-3} textAnchor="middle" fontSize={7.5} fill={isToday?foliar.accent:foliar.inkMuted} fontFamily={foliar.mono}>{v}</text>}
+        {showLabel&&<text x={x+BAR_W/2} y={VH+13} textAnchor="middle" fontSize={8} fill={isToday?foliar.accent:foliar.inkMuted} fontFamily={foliar.mono} fontWeight={isToday?600:400}>{day}</text>}
+      </g>;
+    })}
+  </svg>;
+}
+
+function MiniDonut({slices,size=110}){
+  const total=slices.reduce((s,d)=>s+d.value,0);
+  if(!total)return <div style={{color:foliar.inkMuted,fontSize:11,textAlign:'center',padding:20}}>Sin datos</div>;
+  const R=size/2-6,r=R*0.58,cx=size/2,cy=size/2;
+  let angle=-Math.PI/2;
+  const paths=slices.filter(s=>s.value>0).map(s=>{
+    const start=angle;
+    const sweep=(s.value/total)*2*Math.PI;
+    angle+=sweep;
+    const x1=cx+R*Math.cos(start),y1=cy+R*Math.sin(start);
+    const x2=cx+R*Math.cos(start+sweep),y2=cy+R*Math.sin(start+sweep);
+    const ix1=cx+r*Math.cos(start+sweep),iy1=cy+r*Math.sin(start+sweep);
+    const ix2=cx+r*Math.cos(start),iy2=cy+r*Math.sin(start);
+    const lg=sweep>Math.PI?1:0;
+    return <path key={s.label} d={`M ${x1} ${y1} A ${R} ${R} 0 ${lg} 1 ${x2} ${y2} L ${ix1} ${iy1} A ${r} ${r} 0 ${lg} 0 ${ix2} ${iy2} Z`} fill={s.color}/>;
+  });
+  return <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{flexShrink:0}}>
+    {paths}
+    <text x={cx} y={cy+6} textAnchor="middle" fontSize={18} fontWeight={600} fill={foliar.ink} fontFamily={foliar.font}>{total}</text>
+  </svg>;
+}
+
+// ── EstadisticasScreen ──
+function EstadisticasScreen({go,product,setProduct,user,onLogout}){
+  const [stats,setStats]=React.useState(null);
+  const [loading,setLoading]=React.useState(true);
+  const isAdmin=user&&user.rol==='Admin';
+
+  React.useEffect(()=>{
+    fetch('/api/stats',{credentials:'include'})
+      .then(r=>{if(r.status===401){go('login');throw new Error('no-auth');}return r.json();})
+      .then(d=>{if(d.ok)setStats(d);})
+      .catch(e=>{if(e.message!=='no-auth')console.warn(e);})
+      .finally(()=>setLoading(false));
+  },[]);
+
+  const PRODUCT_COLORS={formulario:'#1E3A5F',telegrama:'#3A6B40',escrito:'#8A7318',combo:'#6B4E8A'};
+  const PRODUCT_LABELS={formulario:'Formulario',telegrama:'Telegrama',escrito:'Escrito',combo:'Combo'};
+  const ESTADO_COLORS={Borrador:'#9C988F','En revisión':'#E5A24C',Despachado:'#5C9461',Presentado:'#3F6675'};
+  const ROL_COLOR={Admin:{bg:foliar.accentPale,fg:foliar.accent},Editor:{bg:'#EAF1F4',fg:'#3F6675'},Visor:{bg:'#F1F0EE',fg:'#6B6862'}};
+
+  const delta=stats&&stats.mes_anterior>0?Math.round((stats.este_mes-stats.mes_anterior)/stats.mes_anterior*100):null;
+
+  return <Shell hideStepper product={product} setProduct={setProduct} go={go} activeLib="estadisticas" user={user} onLogout={onLogout}>
+    <div style={{flex:1,overflow:'auto',padding:'36px 40px'}}>
+      <div style={{maxWidth:1100,margin:'0 auto'}}>
+        <div style={{fontSize:11,color:foliar.accent,fontFamily:foliar.mono,letterSpacing:.4,marginBottom:8,textTransform:'uppercase',fontWeight:500}}>— métricas</div>
+        <h1 style={{fontSize:32,fontWeight:600,letterSpacing:-.8,margin:0,color:foliar.ink,lineHeight:1.1}}>Estadísticas</h1>
+        <p style={{fontSize:13.5,color:foliar.inkSoft,margin:'8px 0 0',lineHeight:1.5}}>Actividad y métricas del estudio.</p>
+
+        {loading&&<div style={{marginTop:48,textAlign:'center',color:foliar.inkMuted,fontSize:12}}>Cargando…</div>}
+
+        {stats&&<>
+          {/* KPI cards */}
+          <div style={{marginTop:28,display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:12}}>
+            {[
+              {label:'Total trámites',val:stats.total},
+              {label:'Este mes',val:stats.este_mes,extra:delta!==null?<span style={{fontSize:10.5,color:delta>=0?foliar.success:foliar.danger,fontFamily:foliar.mono,marginTop:4,display:'block'}}>{delta>=0?'▲':'▼'} {Math.abs(delta)}% vs mes ant.</span>:null},
+              {label:'Esta semana',val:stats.esta_sem},
+              {label:'Hoy',val:stats.hoy},
+              {label:'Confianza prom.',val:`${stats.avg_conf}%`,mono:true},
+            ].map(({label,val,extra,mono})=><div key={label} style={{background:foliar.surface,border:`1px solid ${foliar.line}`,borderRadius:foliar.radius.md,padding:'16px'}}>
+              <div style={{fontSize:10.5,color:foliar.inkMuted,fontFamily:foliar.mono,letterSpacing:.3,textTransform:'uppercase',fontWeight:500,marginBottom:8}}>{label}</div>
+              <div style={{fontSize:28,fontWeight:600,color:foliar.ink,letterSpacing:-1,fontFamily:mono?foliar.mono:foliar.font,lineHeight:1.1}}>{val}</div>
+              {extra}
+            </div>)}
+          </div>
+
+          {/* Actividad 30d + donut por tipo */}
+          <div style={{marginTop:14,display:'grid',gridTemplateColumns:'1fr 300px',gap:14,alignItems:'start'}}>
+            <div style={{background:foliar.surface,border:`1px solid ${foliar.line}`,borderRadius:foliar.radius.md,padding:'18px 20px'}}>
+              <div style={{fontSize:10.5,color:foliar.inkMuted,fontFamily:foliar.mono,letterSpacing:.3,textTransform:'uppercase',fontWeight:500,marginBottom:14}}>Actividad — últimos 30 días</div>
+              <BarChart30 data={stats.daily}/>
+            </div>
+            <div style={{background:foliar.surface,border:`1px solid ${foliar.line}`,borderRadius:foliar.radius.md,padding:'18px 20px'}}>
+              <div style={{fontSize:10.5,color:foliar.inkMuted,fontFamily:foliar.mono,letterSpacing:.3,textTransform:'uppercase',fontWeight:500,marginBottom:14}}>Por tipo</div>
+              {(()=>{
+                const slices=Object.entries(stats.by_product).map(([k,v])=>({label:k,value:v,color:PRODUCT_COLORS[k]})).filter(s=>s.value>0);
+                const tot=slices.reduce((s,x)=>s+x.value,0)||1;
+                return <div style={{display:'flex',alignItems:'center',gap:16}}>
+                  <MiniDonut slices={slices} size={110}/>
+                  <div style={{flex:1,display:'flex',flexDirection:'column',gap:9}}>
+                    {slices.map(s=><div key={s.label} style={{display:'flex',alignItems:'center',gap:7}}>
+                      <div style={{width:7,height:7,borderRadius:2,background:s.color,flexShrink:0}}/>
+                      <div style={{flex:1,fontSize:11.5,color:foliar.inkSoft}}>{PRODUCT_LABELS[s.label]||s.label}</div>
+                      <div style={{fontSize:11.5,fontFamily:foliar.mono,color:foliar.ink,fontWeight:500}}>{s.value}</div>
+                      <div style={{fontSize:10,color:foliar.inkMuted,fontFamily:foliar.mono,minWidth:30,textAlign:'right'}}>{Math.round(s.value/tot*100)}%</div>
+                    </div>)}
+                  </div>
+                </div>;
+              })()}
+            </div>
+          </div>
+
+          {/* Estado + ranking usuarios */}
+          <div style={{marginTop:14,display:'grid',gridTemplateColumns:isAdmin&&stats.by_user.length?'1fr 1fr':'1fr',gap:14,marginBottom:24}}>
+            <div style={{background:foliar.surface,border:`1px solid ${foliar.line}`,borderRadius:foliar.radius.md,padding:'18px 20px'}}>
+              <div style={{fontSize:10.5,color:foliar.inkMuted,fontFamily:foliar.mono,letterSpacing:.3,textTransform:'uppercase',fontWeight:500,marginBottom:16}}>Por estado</div>
+              {(()=>{
+                const tot=Object.values(stats.by_estado).reduce((s,v)=>s+v,0)||1;
+                return <div style={{display:'flex',flexDirection:'column',gap:12}}>
+                  {Object.entries(stats.by_estado).map(([estado,count])=>{
+                    const pct=Math.round(count/tot*100);
+                    const col=ESTADO_COLORS[estado]||foliar.inkSoft;
+                    return <div key={estado}>
+                      <div style={{display:'flex',justifyContent:'space-between',marginBottom:5}}>
+                        <span style={{fontSize:12.5,color:foliar.inkSoft}}>{estado}</span>
+                        <span style={{fontSize:12,fontFamily:foliar.mono,color:foliar.ink,fontWeight:500}}>{count} <span style={{color:foliar.inkMuted,fontWeight:400,fontSize:11}}>({pct}%)</span></span>
+                      </div>
+                      <div style={{height:7,background:foliar.surfaceSunken,borderRadius:4,overflow:'hidden'}}>
+                        <div style={{height:'100%',width:`${pct}%`,background:col,borderRadius:4}}/>
+                      </div>
+                    </div>;
+                  })}
+                </div>;
+              })()}
+            </div>
+
+            {isAdmin&&stats.by_user.length>0&&<div style={{background:foliar.surface,border:`1px solid ${foliar.line}`,borderRadius:foliar.radius.md,padding:'18px 20px'}}>
+              <div style={{fontSize:10.5,color:foliar.inkMuted,fontFamily:foliar.mono,letterSpacing:.3,textTransform:'uppercase',fontWeight:500,marginBottom:16}}>Ranking por usuario</div>
+              {(()=>{
+                const maxCount=Math.max(...stats.by_user.map(u=>u.count),1);
+                return <div style={{display:'flex',flexDirection:'column',gap:12}}>
+                  {stats.by_user.map((u,i)=>{
+                    const pct=Math.round(u.count/maxCount*100);
+                    const rc=ROL_COLOR[u.rol]||ROL_COLOR.Editor;
+                    return <div key={u.name}>
+                      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:5}}>
+                        <div style={{width:20,height:20,borderRadius:10,background:u.color,color:'#fff',fontSize:9,fontWeight:600,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>{u.name.slice(0,2).toUpperCase()}</div>
+                        <span style={{flex:1,fontSize:12.5,color:foliar.ink,fontWeight:500}}>{u.name}</span>
+                        <span style={{padding:'1.5px 7px',borderRadius:999,background:rc.bg,color:rc.fg,fontSize:9.5,fontWeight:500}}>{u.rol}</span>
+                        <span style={{fontSize:13,fontFamily:foliar.mono,color:foliar.ink,fontWeight:600,minWidth:28,textAlign:'right'}}>{u.count}</span>
+                      </div>
+                      <div style={{height:5,background:foliar.surfaceSunken,borderRadius:3,overflow:'hidden'}}>
+                        <div style={{height:'100%',width:`${pct}%`,background:u.color,borderRadius:3}}/>
+                      </div>
+                    </div>;
+                  })}
+                </div>;
+              })()}
+            </div>}
+          </div>
+        </>}
+      </div>
+    </div>
+  </Shell>;
+}
+
+// ── HistorialScreen ──
+function HistorialScreen({go,product,setProduct,user,onLogout}){
+  const [items,setItems]=React.useState([]);
+  const [q,setQ]=React.useState('');
+  const [filterProd,setFilterProd]=React.useState('all');
+  const [loading,setLoading]=React.useState(true);
+  const [apiError,setApiError]=React.useState(null);
+  React.useEffect(()=>{
+    fetch('/api/historial',{credentials:'include'})
+      .then(r=>{if(r.status===401){go('login');throw new Error('no-auth');}return r.json();})
+      .then(d=>{if(d.ok)setItems(d.items||[]);else setApiError(d.error||'Error al cargar el historial.');})
+      .catch(e=>{if(e.message!=='no-auth')setApiError('No se pudo conectar con el servidor.');})
+      .finally(()=>setLoading(false));
+  },[]);
+
+  const rows=items.filter(r=>(filterProd==='all'||r.producto===filterProd)&&(q===''||String(r.titulo).toLowerCase().includes(q.toLowerCase())||String(r.id).toLowerCase().includes(q.toLowerCase())));
+
+  const ESTADO_BADGE={'En revisión':{bg:'#FFF6E5',fg:'#A86A0E',dot:'#E5A24C'},'Borrador':{bg:'#F1F0EE',fg:'#6B6862',dot:'#9C988F'},'Presentado':{bg:'#EAF1F4',fg:'#3F6675',dot:foliar.accent},'Despachado':{bg:'#EAF4EA',fg:'#3A6B40',dot:'#5C9461'},'default':{bg:'#EAF1F4',fg:'#3F6675',dot:foliar.accent}};
+
+  return <Shell hideStepper product={product} setProduct={setProduct} go={go} activeLib="historial" user={user} onLogout={onLogout}>
+    <div style={{flex:1,overflow:'auto',padding:'36px 40px'}}>
+      <div style={{maxWidth:1100,margin:'0 auto'}}>
+        <div style={{fontSize:11,color:foliar.accent,fontFamily:foliar.mono,letterSpacing:.4,marginBottom:8,textTransform:'uppercase',fontWeight:500}}>— biblioteca</div>
+        <div style={{display:'flex',alignItems:'flex-end',justifyContent:'space-between',gap:24}}>
+          <div><h1 style={{fontSize:32,fontWeight:600,letterSpacing:-.8,margin:0,color:foliar.ink,lineHeight:1.1}}>Historial de trámites</h1><p style={{fontSize:13.5,color:foliar.inkSoft,margin:'8px 0 0',lineHeight:1.5}}>Cada documento que pasó por el agente.</p></div>
+          <div style={{display:'flex',gap:8}}>
+            <Button variant="outline" size="sm" icon={<DownloadIcon size={12}/>} onClick={()=>window.open('/api/historial/export','_blank')}>Exportar CSV</Button>
+            <Button variant="primary" iconRight={<ArrowIcon size={12}/>} onClick={()=>go('upload')}>Nuevo trámite</Button>
+          </div>
+        </div>
+
+        <div style={{marginTop:24,display:'flex',alignItems:'center',gap:10}}>
+          <div style={{flex:1,position:'relative'}}>
+            <span style={{position:'absolute',left:12,top:'50%',transform:'translateY(-50%)',color:foliar.inkMuted,display:'flex',pointerEvents:'none'}}><SearchIcon size={13}/></span>
+            <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Buscar por título o número…" style={{width:'100%',padding:'9px 12px 9px 32px',border:`1px solid ${foliar.line}`,borderRadius:foliar.radius.sm,fontSize:13,color:foliar.ink,background:foliar.surface,outline:'none',boxSizing:'border-box'}}/>
+          </div>
+          <div style={{display:'flex',gap:4,background:foliar.surfaceSoft,border:`1px solid ${foliar.line}`,borderRadius:999,padding:3}}>
+            {[['all','Todos'],['formulario','Formularios'],['telegrama','Telegramas'],['escrito','Escritos']].map(([k,l])=><button key={k} onClick={()=>setFilterProd(k)} style={{padding:'5px 12px',borderRadius:999,border:'none',cursor:'pointer',background:filterProd===k?foliar.surface:'transparent',boxShadow:filterProd===k?foliar.shadow1:'none',fontSize:12,fontWeight:filterProd===k?500:400,color:foliar.ink,fontFamily:foliar.font}}>{l}</button>)}
+          </div>
+        </div>
+        <div style={{marginTop:16,background:foliar.surface,border:`1px solid ${foliar.line}`,borderRadius:foliar.radius.md,overflow:'hidden'}}>
+          <div style={{display:'grid',gridTemplateColumns:'80px 1fr 120px 120px 80px 100px',padding:'10px 16px',borderBottom:`1px solid ${foliar.line}`,fontSize:10.5,color:foliar.inkMuted,fontFamily:foliar.mono,letterSpacing:.3,textTransform:'uppercase',fontWeight:500}}>
+            <div>ID</div><div>Título</div><div>Tipo</div><div>Estado</div><div>Confianza</div><div>Autor</div>
+          </div>
+          {loading&&<div style={{padding:'30px',textAlign:'center',color:foliar.inkMuted,fontSize:12}}>Cargando…</div>}
+          {!loading&&apiError&&<div style={{padding:'20px 30px',color:foliar.danger,fontSize:12}}>{apiError}</div>}
+          {!loading&&!apiError&&rows.length===0&&<div style={{padding:'30px',textAlign:'center',color:foliar.inkMuted,fontSize:12}}>Sin trámites registrados todavía.</div>}
+          {rows.map((r,i)=>{
+            const b=ESTADO_BADGE[r.estado]||ESTADO_BADGE['default'];
+            return <div key={r.id} style={{display:'grid',gridTemplateColumns:'80px 1fr 120px 120px 80px 100px',padding:'12px 16px',alignItems:'center',borderBottom:i<rows.length-1?`1px solid ${foliar.lineSoft}`:'none',fontSize:12.5,cursor:'pointer'}} onClick={()=>{setProduct(r.producto);go('upload');}}>
+              <div style={{fontFamily:foliar.mono,fontSize:11.5,color:foliar.accent,fontWeight:500}}>#{r.id}</div>
+              <div style={{minWidth:0}}><div style={{color:foliar.ink,fontWeight:500,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{r.titulo||'Sin título'}</div><div style={{fontSize:11,color:foliar.inkMuted,marginTop:2}}>{r.campos||0} campos · {r.t}</div></div>
+              <div style={{color:foliar.inkSoft,textTransform:'capitalize',display:'flex',alignItems:'center',gap:6}}><span style={{display:'flex',color:foliar.inkSoft}}>{PRODUCTS[r.producto]?.icon(12)||null}</span>{r.producto}</div>
+              <div><span style={{display:'inline-flex',alignItems:'center',gap:6,padding:'3px 9px',borderRadius:999,background:b.bg,color:b.fg,fontSize:11,fontWeight:500}}><span style={{width:5,height:5,borderRadius:3,background:b.dot}}/>{r.estado}</span></div>
+              <div style={{fontFamily:foliar.mono,fontSize:11.5,color:r.conf&&r.conf>=0.9?foliar.accent:'#A86A0E'}}>{r.conf?`${Math.round(r.conf*100)}%`:'—'}</div>
+              <div style={{fontSize:11.5,color:foliar.inkSoft}}>{r.autor||'—'}</div>
+            </div>;
+          })}
+        </div>
+      </div>
+    </div>
+  </Shell>;
+}
+
+// ── EditUserDrawer ──
+function EditUserDrawer({member,onClose,onSaved,onDeleted}){
+  const [rol,setRol]=React.useState(member.rol);
+  const [pwd,setPwd]=React.useState('');
+  const [showNew,setShowNew]=React.useState(false);
+  const [currentPwd,setCurrentPwd]=React.useState(null);
+  const [showCurrent,setShowCurrent]=React.useState(false);
+  const [loadingPwd,setLoadingPwd]=React.useState(false);
+  const [confirmDelete,setConfirmDelete]=React.useState(false);
+  const [loading,setLoading]=React.useState(false);
+  const [error,setError]=React.useState(null);
+  const [ok,setOk]=React.useState(false);
+  const ROL_COLOR={Admin:{bg:foliar.accentPale,fg:foliar.accent},Editor:{bg:'#EAF1F4',fg:'#3F6675'},Visor:{bg:'#F1F0EE',fg:'#6B6862'}};
+
+  React.useEffect(()=>{
+    const onKey=e=>{if(e.key==='Escape')onClose();};
+    window.addEventListener('keydown',onKey);
+    return()=>window.removeEventListener('keydown',onKey);
+  },[onClose]);
+
+  const fetchCurrentPwd=async()=>{
+    if(currentPwd!==null){setShowCurrent(v=>!v);return;}
+    setLoadingPwd(true);
+    try{const r=await fetch(`/api/equipo/${member.id}/password`,{credentials:'include'});const d=await r.json();if(d.ok){setCurrentPwd(d.password);setShowCurrent(true);}}catch{}
+    setLoadingPwd(false);
+  };
+
+  const save=async()=>{
+    if(!pwd&&rol===member.rol){onClose();return;}
+    setLoading(true);setError(null);
+    try{
+      const body={};
+      if(rol!==member.rol)body.rol=rol;
+      if(pwd.length>=8)body.password=pwd;
+      else if(pwd.length>0){setError('La contraseña debe tener al menos 8 caracteres.');setLoading(false);return;}
+      const r=await fetch(`/api/equipo/${member.id}`,{method:'PATCH',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify(body)});
+      const d=await r.json();
+      if(d.ok){setOk(true);setTimeout(()=>{onSaved(d.member);onClose();},900);}
+      else setError(d.error||'Error al guardar.');
+    }catch{setError('Error de conexión.');}
+    setLoading(false);
+  };
+
+  const doDelete=async()=>{
+    setLoading(true);
+    try{
+      const r=await fetch(`/api/equipo/${member.id}`,{method:'DELETE',credentials:'include'});
+      const d=await r.json();
+      if(d.ok){onDeleted(member.id);onClose();}
+      else setError(d.error||'Error al eliminar.');
+    }catch{setError('Error de conexión.');}
+    setLoading(false);
+  };
+
+  return <div style={{position:'fixed',inset:0,zIndex:60,display:'flex',justifyContent:'flex-end'}}>
+    <div onClick={onClose} style={{position:'absolute',inset:0,background:'rgba(38,33,28,.32)',backdropFilter:'blur(2px)',animation:'foliar-fade .2s ease'}}/>
+    <div style={{position:'relative',width:'min(460px,92vw)',height:'100%',background:foliar.surface,borderLeft:`1px solid ${foliar.line}`,boxShadow:'-12px 0 40px rgba(38,33,28,.18)',display:'flex',flexDirection:'column',animation:'foliar-drawer .26s cubic-bezier(.2,.8,.2,1)'}}>
+      <div style={{padding:'18px 24px',borderBottom:`1px solid ${foliar.line}`,display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:14}}>
+        <div style={{display:'flex',alignItems:'center',gap:12}}>
+          <div style={{width:38,height:38,borderRadius:19,background:member.color||foliar.accent,color:'#fff',fontSize:13,fontWeight:600,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>{member.n.split(' ').map(s=>s[0]).slice(0,2).join('')}</div>
+          <div><h2 style={{fontSize:17,fontWeight:600,letterSpacing:-.3,margin:0,color:foliar.ink}}>{member.n}</h2><div style={{fontSize:11,color:foliar.inkMuted,fontFamily:foliar.mono,marginTop:1}}>{member.email}</div></div>
+        </div>
+        <button onClick={onClose} style={{width:28,height:28,borderRadius:14,border:`1px solid ${foliar.line}`,background:foliar.surface,color:foliar.inkSoft,cursor:'pointer',fontSize:14,display:'flex',alignItems:'center',justifyContent:'center'}}>×</button>
+      </div>
+      <div style={{flex:1,overflow:'auto',padding:'20px 24px',display:'flex',flexDirection:'column',gap:20}}>
+        {/* Contraseña actual */}
+        <div>
+          <div style={{fontSize:11,color:foliar.inkSoft,fontWeight:500,marginBottom:8}}>Contraseña actual</div>
+          <div style={{display:'flex',alignItems:'center',gap:8,padding:'9px 12px',border:`1px solid ${foliar.line}`,borderRadius:foliar.radius.sm,background:foliar.surfaceSoft}}>
+            <span style={{flex:1,fontFamily:foliar.mono,fontSize:13,color:foliar.ink,letterSpacing:showCurrent?0:3}}>{showCurrent&&currentPwd?currentPwd:'••••••••••••'}</span>
+            <button onClick={fetchCurrentPwd} style={{fontSize:11,color:foliar.accent,background:'transparent',border:'none',cursor:'pointer',fontFamily:foliar.font,padding:'2px 6px',whiteSpace:'nowrap'}}>{loadingPwd?'…':showCurrent?'Ocultar':'Ver'}</button>
+          </div>
+        </div>
+        {/* Nueva contraseña */}
+        <div>
+          <div style={{fontSize:11,color:foliar.inkSoft,fontWeight:500,marginBottom:8}}>Cambiar contraseña</div>
+          <div style={{display:'flex',alignItems:'stretch',border:`1.5px solid ${foliar.line}`,borderRadius:foliar.radius.sm,overflow:'hidden',background:foliar.surface}}>
+            <input value={pwd} onChange={e=>setPwd(e.target.value)} type={showNew?'text':'password'} placeholder="Nueva contraseña (mín. 8 caracteres)" style={{flex:1,padding:'9px 12px',border:'none',fontSize:13,fontFamily:foliar.mono,color:foliar.ink,background:'transparent',outline:'none'}}/>
+            <button onClick={()=>setShowNew(!showNew)} style={{padding:'0 12px',borderLeft:`1px solid ${foliar.line}`,fontSize:11,color:foliar.inkSoft,background:foliar.surfaceSoft,border:'none',cursor:'pointer',fontFamily:foliar.font}}>{showNew?'Ocultar':'Mostrar'}</button>
+          </div>
+        </div>
+        {/* Rol */}
+        <div>
+          <div style={{fontSize:11,color:foliar.inkSoft,fontWeight:500,marginBottom:8}}>Rol</div>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:6}}>{['Admin','Editor','Visor'].map(k=>{const on=rol===k;const c=ROL_COLOR[k];return <div key={k} onClick={()=>setRol(k)} style={{padding:'10px 12px',cursor:'pointer',border:`1.5px solid ${on?foliar.accent:foliar.line}`,background:on?foliar.accentPale:foliar.surface,borderRadius:foliar.radius.sm,transition:'border-color .12s'}}><span style={{display:'inline-flex',padding:'2px 8px',borderRadius:999,background:c.bg,color:c.fg,fontSize:10.5,fontWeight:500,marginBottom:6}}>{k}</span></div>;})}
+          </div>
+        </div>
+        {error&&<div style={{padding:'10px 12px',background:'#FBEDE9',border:'1px solid #E9BFB4',borderRadius:foliar.radius.sm,fontSize:12,color:'#8B3A2D'}}>{error}</div>}
+        {ok&&<div style={{padding:'10px 12px',background:foliar.successPale,border:`1px solid ${foliar.success}33`,borderRadius:foliar.radius.sm,fontSize:12,color:foliar.success}}>Cambios guardados</div>}
+        {/* Zona peligrosa */}
+        <div style={{marginTop:'auto',paddingTop:20,borderTop:`1px solid ${foliar.lineSoft}`}}>
+          {!confirmDelete
+            ?<button onClick={()=>setConfirmDelete(true)} style={{width:'100%',padding:'9px',background:'transparent',border:`1px solid ${foliar.danger}55`,borderRadius:foliar.radius.sm,fontSize:12,color:foliar.danger,cursor:'pointer',fontFamily:foliar.font}}>Eliminar usuario</button>
+            :<div style={{background:foliar.dangerPale,border:`1px solid ${foliar.danger}44`,borderRadius:foliar.radius.sm,padding:'14px 16px'}}>
+              <div style={{fontSize:12,color:foliar.danger,marginBottom:10}}>¿Eliminar a <strong>{member.n}</strong> y todos sus trámites? Esta acción no se puede deshacer.</div>
+              <div style={{display:'flex',gap:8}}>
+                <button onClick={()=>setConfirmDelete(false)} style={{flex:1,padding:'7px',background:'transparent',border:`1px solid ${foliar.line}`,borderRadius:foliar.radius.sm,fontSize:12,cursor:'pointer',fontFamily:foliar.font,color:foliar.inkMuted}}>Cancelar</button>
+                <button onClick={doDelete} disabled={loading} style={{flex:1,padding:'7px',background:foliar.danger,border:'none',borderRadius:foliar.radius.sm,fontSize:12,cursor:'pointer',fontFamily:foliar.font,color:'#fff'}}>{loading?'Eliminando…':'Confirmar eliminación'}</button>
+              </div>
+            </div>}
+        </div>
+      </div>
+      <div style={{padding:'14px 24px',borderTop:`1px solid ${foliar.line}`,display:'flex',gap:8,justifyContent:'flex-end',background:foliar.surfaceSoft}}>
+        <Button variant="ghost" onClick={onClose}>Cancelar</Button>
+        <Button variant="primary" onClick={save} disabled={loading||ok} icon={<CheckIcon size={12}/>}>{loading?'Guardando…':'Guardar cambios'}</Button>
+      </div>
+    </div>
+  </div>;
+}
+
+// ── EquipoScreen ──
+function EquipoScreen({go,product,setProduct,user,onLogout}){
+  const [team,setTeam]=React.useState([]);
+  const [loading,setLoading]=React.useState(true);
+  const [apiError,setApiError]=React.useState(null);
+  const [openCreate,setOpenCreate]=React.useState(false);
+  const [editMember,setEditMember]=React.useState(null);
+  const [auditLog,setAuditLog]=React.useState([]);
+  const isAdmin=user&&user.rol==='Admin';
+
+  React.useEffect(()=>{
+    if(isAdmin){
+      fetch('/api/equipo/audit',{credentials:'include'})
+        .then(r=>r.json()).then(d=>{if(d.ok)setAuditLog(d.items||[]);}).catch(()=>{});
+    }
+  },[isAdmin]);
+
+  React.useEffect(()=>{
+    fetch('/api/equipo',{credentials:'include'})
+      .then(r=>{if(r.status===401){go('login');throw new Error('no-auth');}return r.json();})
+      .then(d=>{if(d.ok)setTeam(d.items||[]);else setApiError(d.error||'Error al cargar el equipo.');})
+      .catch(e=>{if(e.message!=='no-auth')setApiError('No se pudo conectar con el servidor.');})
+      .finally(()=>setLoading(false));
+  },[]);
+
+  const ROL_COLOR={Admin:{bg:foliar.accentPale,fg:foliar.accent},Editor:{bg:'#EAF1F4',fg:'#3F6675'},Visor:{bg:'#F1F0EE',fg:'#6B6862'}};
+
+  return <Shell hideStepper product={product} setProduct={setProduct} go={go} activeLib="equipo" user={user} onLogout={onLogout}>
+    <div style={{flex:1,overflow:'auto',padding:'36px 40px'}}>
+      <div style={{maxWidth:1100,margin:'0 auto'}}>
+        <div style={{fontSize:11,color:foliar.accent,fontFamily:foliar.mono,letterSpacing:.4,marginBottom:8,textTransform:'uppercase',fontWeight:500}}>— biblioteca</div>
+        <div style={{display:'flex',alignItems:'flex-end',justifyContent:'space-between'}}>
+          <div><h1 style={{fontSize:32,fontWeight:600,letterSpacing:-.8,margin:0,color:foliar.ink,lineHeight:1.1}}>Equipo</h1><p style={{fontSize:13.5,color:foliar.inkSoft,margin:'8px 0 0',lineHeight:1.5}}>Usuarios autorizados del estudio.</p></div>
+          {isAdmin&&<Button variant="primary" icon={<PlusIcon size={12}/>} onClick={()=>setOpenCreate(true)}>Crear usuario</Button>}
+        </div>
+        <div style={{marginTop:24,display:'grid',gridTemplateColumns:'2fr 1fr',gap:24,alignItems:'flex-start'}}>
+          <div style={{background:foliar.surface,border:`1px solid ${foliar.line}`,borderRadius:foliar.radius.md,overflow:'hidden'}}>
+            <div style={{display:'grid',gridTemplateColumns:'1.5fr 90px 110px 80px',padding:'10px 16px',borderBottom:`1px solid ${foliar.line}`,fontSize:10.5,color:foliar.inkMuted,fontFamily:foliar.mono,letterSpacing:.3,textTransform:'uppercase',fontWeight:500}}>
+              <div>Usuario</div><div>Rol</div><div>Última actividad</div><div>Trámites</div>
+            </div>
+            {loading&&<div style={{padding:'30px',textAlign:'center',color:foliar.inkMuted,fontSize:12}}>Cargando…</div>}
+            {!loading&&apiError&&<div style={{padding:'20px 30px',color:foliar.danger,fontSize:12}}>{apiError}</div>}
+            {!loading&&!apiError&&team.length===0&&<div style={{padding:'30px',textAlign:'center',color:foliar.inkMuted,fontSize:12}}>Sin miembros registrados.</div>}
+            {team.map((u,i)=>{const c=ROL_COLOR[u.rol]||ROL_COLOR.Editor;return <div key={u.email} onClick={isAdmin?()=>setEditMember(u):undefined} style={{display:'grid',gridTemplateColumns:'1.5fr 90px 110px 80px',padding:'12px 16px',alignItems:'center',borderBottom:i<team.length-1?`1px solid ${foliar.lineSoft}`:'none',opacity:u.estado==='pendiente'?.7:1,cursor:isAdmin?'pointer':'default',transition:'background .1s'}} onMouseEnter={isAdmin?e=>e.currentTarget.style.background=foliar.surfaceSoft:undefined} onMouseLeave={isAdmin?e=>e.currentTarget.style.background='':undefined}>
+              <div style={{display:'flex',alignItems:'center',gap:10,minWidth:0}}>
+                <div style={{width:28,height:28,borderRadius:14,background:u.color||foliar.accent,color:'#fff',fontSize:10.5,fontWeight:600,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>{u.n.split(' ').map(s=>s[0]).slice(0,2).join('')}</div>
+                <div style={{minWidth:0}}><div style={{color:foliar.ink,fontWeight:500,display:'flex',alignItems:'center',gap:6}}>{u.n}{u.estado==='pendiente'&&<span style={{fontSize:9.5,padding:'1.5px 6px',borderRadius:3,background:'#FFF6E5',color:'#A86A0E',fontFamily:foliar.mono,fontWeight:500}}>INVITADO</span>}</div><div style={{fontSize:11,color:foliar.inkMuted,fontFamily:foliar.mono,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{u.email}</div></div>
+              </div>
+              <div><span style={{padding:'3px 9px',borderRadius:999,background:c.bg,color:c.fg,fontSize:11,fontWeight:500}}>{u.rol}</span></div>
+              <div style={{fontSize:11.5,color:foliar.inkSoft}}>{u.activa||'—'}</div>
+              <div style={{fontFamily:foliar.mono,fontSize:11.5,color:foliar.ink}}>{u.tramites||0}</div>
+            </div>;})}
+          </div>
+          <div style={{background:foliar.surface,border:`1px solid ${foliar.line}`,borderRadius:foliar.radius.md,padding:18}}>
+            <div style={{fontSize:12,fontWeight:500,color:foliar.ink,marginBottom:12}}>Roles y permisos</div>
+            {[{n:'Admin',d:'Crea cuentas, ve todos los trámites, edita plantillas'},{n:'Editor',d:'Sube documentos, edita campos, exporta y despacha'},{n:'Visor',d:'Solo consulta trámites cerrados; sin edición'}].map((r,i)=>{const c=ROL_COLOR[r.n];return <div key={r.n} style={{paddingTop:i?12:0,paddingBottom:i<2?12:0,borderBottom:i<2?`1px solid ${foliar.lineSoft}`:'none',display:'flex',flexDirection:'column',gap:4}}><span style={{padding:'2px 8px',borderRadius:999,background:c.bg,color:c.fg,fontSize:10.5,fontWeight:500,width:'fit-content'}}>{r.n}</span><div style={{fontSize:11.5,color:foliar.inkSoft,lineHeight:1.45}}>{r.d}</div></div>;})}
+          </div>
+        </div>
+        {isAdmin&&auditLog.length>0&&(()=>{
+          const ACCION_LABEL={user_created:'Usuario creado',user_deleted:'Usuario eliminado',role_changed:'Rol cambiado',password_changed:'Clave cambiada'};
+          const ACCION_COLOR={user_created:{bg:foliar.successPale,fg:foliar.success},user_deleted:{bg:foliar.dangerPale,fg:foliar.danger},role_changed:{bg:foliar.accentPale,fg:foliar.accent},password_changed:{bg:foliar.warnPale,fg:foliar.warn}};
+          return <div style={{marginTop:8}}>
+            <div style={{fontSize:11,color:foliar.inkMuted,fontFamily:foliar.mono,letterSpacing:.3,textTransform:'uppercase',fontWeight:500,marginBottom:10}}>Registro de actividad</div>
+            <div style={{background:foliar.surface,border:`1px solid ${foliar.line}`,borderRadius:foliar.radius.md,overflow:'hidden'}}>
+              <div style={{display:'grid',gridTemplateColumns:'130px 120px 110px 1fr',padding:'8px 16px',borderBottom:`1px solid ${foliar.line}`,fontSize:10,color:foliar.inkMuted,fontFamily:foliar.mono,letterSpacing:.3,textTransform:'uppercase',fontWeight:500}}>
+                <div>Fecha</div><div>Acción</div><div>Por</div><div>Detalle</div>
+              </div>
+              {auditLog.map((a,i)=>{const col=ACCION_COLOR[a.accion]||{bg:foliar.surfaceSunken,fg:foliar.inkSoft};return <div key={a.id} style={{display:'grid',gridTemplateColumns:'130px 120px 110px 1fr',padding:'10px 16px',alignItems:'center',borderBottom:i<auditLog.length-1?`1px solid ${foliar.lineSoft}`:'none',background:i%2===0?foliar.surface:foliar.surfaceSoft}}>
+                <div style={{fontSize:11,color:foliar.inkSoft,fontFamily:foliar.mono}}>{a.ts}</div>
+                <div><span style={{padding:'2px 8px',borderRadius:999,background:col.bg,color:col.fg,fontSize:10,fontWeight:500}}>{ACCION_LABEL[a.accion]||a.accion}</span></div>
+                <div style={{fontSize:11.5,color:foliar.ink,fontWeight:500}}>{a.actor}</div>
+                <div style={{fontSize:11.5,color:foliar.inkSoft}}>{[a.target,a.detalle].filter(Boolean).join(' — ')||'—'}</div>
+              </div>;})}
+            </div>
+          </div>;
+        })()}
+      </div>
+    </div>
+    {openCreate&&<CreateUserModal onClose={()=>setOpenCreate(false)} onCreate={u=>{setTeam(prev=>[{...u,activa:'recién creada',tramites:0,estado:'activa',color:foliar.accent},...prev]);setOpenCreate(false);}}/>}
+    {editMember&&<EditUserDrawer
+      member={editMember}
+      onClose={()=>setEditMember(null)}
+      onSaved={updated=>setTeam(prev=>prev.map(m=>m.id===updated.id?{...m,...updated}:m))}
+      onDeleted={id=>setTeam(prev=>prev.filter(m=>m.id!==id))}
+    />}
+  </Shell>;
+}
+
+// ── CreateUserModal ──
+function CreateUserModal({onClose,onCreate}){
+  const [nombre,setNombre]=React.useState('');
+  const [email,setEmail]=React.useState('');
+  const [rol,setRol]=React.useState('Editor');
+  const [pwd,setPwd]=React.useState('');
+  const [showPwd,setShowPwd]=React.useState(false);
+  const [loading,setLoading]=React.useState(false);
+  const [error,setError]=React.useState(null);
+
+  React.useEffect(()=>{
+    const onKey=e=>{if(e.key==='Escape')onClose();};
+    window.addEventListener('keydown',onKey);
+    return()=>window.removeEventListener('keydown',onKey);
+  },[onClose]);
+
+  const gen=()=>{const c='ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%&*+=?';let s='';for(let i=0;i<14;i++)s+=c[Math.floor(Math.random()*c.length)];setPwd(s);setShowPwd(true);};
+  const strength=pwd.length<8?1:pwd.length>=12&&/[A-Z]/.test(pwd)&&/[0-9]/.test(pwd)&&/[^A-Za-z0-9]/.test(pwd)?4:pwd.length>=10?3:2;
+  const strLabel=['','Débil','Básica','Buena','Fuerte'][strength];
+  const strColor=['','#C56C6C','#E5A24C','#7F9A55',foliar.accent][strength];
+  const valid=nombre.trim().length>=3&&email.trim().length>=2&&pwd.length>=8;
+  const ROL_COLOR={Admin:{bg:foliar.accentPale,fg:foliar.accent},Editor:{bg:'#EAF1F4',fg:'#3F6675'},Visor:{bg:'#F1F0EE',fg:'#6B6862'}};
+
+  const submit=async()=>{
+    if(!valid)return;
+    setLoading(true);setError(null);
+    try{
+      const r=await fetch('/api/equipo/invite',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({nombre,email:email+'@arrechea.com.ar',rol,password:pwd})});
+      const data=await r.json();
+      if(data.ok){onCreate(data.member||{n:nombre,email:email+'@arrechea.com.ar',rol});}
+      else{setError(data.error||'Error al crear usuario.');}
+    }catch{setError('Error de conexión.');}
+    finally{setLoading(false);}
+  };
+
+  return <div style={{position:'fixed',inset:0,zIndex:60,display:'flex',justifyContent:'flex-end'}}>
+    <div onClick={onClose} style={{position:'absolute',inset:0,background:'rgba(38,33,28,.32)',backdropFilter:'blur(2px)',animation:'foliar-fade .2s ease'}}/>
+    <div style={{position:'relative',width:'min(520px,92vw)',height:'100%',background:foliar.surface,borderLeft:`1px solid ${foliar.line}`,boxShadow:'-12px 0 40px rgba(38,33,28,.18)',display:'flex',flexDirection:'column',animation:'foliar-drawer .26s cubic-bezier(.2,.8,.2,1)'}}>
+      <div style={{padding:'18px 24px',borderBottom:`1px solid ${foliar.line}`,display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:14}}>
+        <div><div style={{fontSize:11,color:foliar.accent,fontFamily:foliar.mono,letterSpacing:.4,marginBottom:4,textTransform:'uppercase',fontWeight:500}}>— alta de usuario</div><h2 style={{fontSize:19,fontWeight:600,letterSpacing:-.4,margin:0,color:foliar.ink}}>Crear cuenta nueva</h2></div>
+        <button onClick={onClose} style={{width:28,height:28,borderRadius:14,border:`1px solid ${foliar.line}`,background:foliar.surface,color:foliar.inkSoft,cursor:'pointer',fontSize:14,display:'flex',alignItems:'center',justifyContent:'center'}}>×</button>
+      </div>
+      <div style={{flex:1,overflow:'auto',padding:'20px 24px',display:'flex',flexDirection:'column',gap:16}}>
+        <div><label style={{fontSize:11,color:foliar.inkSoft,fontWeight:500,marginBottom:6,display:'block'}}>Nombre completo</label><input value={nombre} onChange={e=>setNombre(e.target.value)} placeholder="Mariela Fontán" autoFocus style={{width:'100%',padding:'10px 12px',border:`1.5px solid ${foliar.line}`,borderRadius:foliar.radius.sm,fontSize:13,color:foliar.ink,background:foliar.surface,outline:'none',boxSizing:'border-box'}}/></div>
+        <div><label style={{fontSize:11,color:foliar.inkSoft,fontWeight:500,marginBottom:6,display:'block'}}>Email corporativo</label><div style={{display:'flex',alignItems:'stretch',border:`1.5px solid ${foliar.line}`,borderRadius:foliar.radius.sm,overflow:'hidden',background:foliar.surface}}><input value={email} onChange={e=>setEmail(e.target.value.replace(/@.*$/,'').trim())} placeholder="mfontan" style={{flex:1,padding:'10px 12px',border:'none',fontSize:13,fontFamily:foliar.mono,color:foliar.ink,background:'transparent',outline:'none'}}/><span style={{padding:'10px 12px',borderLeft:`1px solid ${foliar.line}`,fontSize:12.5,color:foliar.inkMuted,background:foliar.surfaceSoft,fontFamily:foliar.mono,display:'flex',alignItems:'center'}}>@arrechea.com.ar</span></div></div>
+        <div><label style={{fontSize:11,color:foliar.inkSoft,fontWeight:500,marginBottom:6,display:'block'}}>Rol</label><div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:6}}>{['Admin','Editor','Visor'].map(k=>{const on=rol===k;const c=ROL_COLOR[k];return <div key={k} onClick={()=>setRol(k)} style={{padding:'10px 12px',cursor:'pointer',border:`1.5px solid ${on?foliar.accent:foliar.line}`,background:on?foliar.accentPale:foliar.surface,borderRadius:foliar.radius.sm}}><span style={{display:'inline-flex',padding:'2px 8px',borderRadius:999,background:c.bg,color:c.fg,fontSize:10.5,fontWeight:500,marginBottom:6}}>{k}</span></div>;})}
+        </div></div>
+        <div><div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',marginBottom:6}}><label style={{fontSize:11,color:foliar.inkSoft,fontWeight:500}}>Contraseña inicial</label><button onClick={gen} style={{fontSize:11,color:foliar.accent,background:'transparent',border:'none',cursor:'pointer',fontFamily:foliar.font,padding:0}}>Generar segura ↻</button></div><div style={{display:'flex',alignItems:'stretch',border:`1.5px solid ${foliar.line}`,borderRadius:foliar.radius.sm,overflow:'hidden',background:foliar.surface}}><input value={pwd} onChange={e=>setPwd(e.target.value)} type={showPwd?'text':'password'} placeholder="mín. 8 caracteres" style={{flex:1,padding:'10px 12px',border:'none',fontSize:13,fontFamily:foliar.mono,color:foliar.ink,background:'transparent',outline:'none'}}/><button onClick={()=>setShowPwd(!showPwd)} style={{padding:'0 12px',borderLeft:`1px solid ${foliar.line}`,fontSize:11,color:foliar.inkSoft,background:foliar.surfaceSoft,border:'none',cursor:'pointer',fontFamily:foliar.font}}>{showPwd?'Ocultar':'Mostrar'}</button></div><div style={{display:'flex',alignItems:'center',gap:8,marginTop:8}}><div style={{flex:1,display:'flex',gap:3}}>{[1,2,3,4].map(n=><div key={n} style={{flex:1,height:3,borderRadius:2,background:n<=strength?strColor:foliar.surfaceSunken}}/>)}</div><span style={{fontSize:10.5,color:strColor,fontFamily:foliar.mono,fontWeight:500,minWidth:40,textAlign:'right'}}>{strLabel}</span></div></div>
+        {error&&<div style={{padding:'10px 12px',background:'#FBEDE9',border:'1px solid #E9BFB4',borderRadius:foliar.radius.sm,fontSize:12,color:'#8B3A2D'}}>{error}</div>}
+      </div>
+      <div style={{padding:'14px 24px',borderTop:`1px solid ${foliar.line}`,display:'flex',gap:8,justifyContent:'flex-end',background:foliar.surfaceSoft}}>
+        <Button variant="ghost" onClick={onClose}>Cancelar</Button>
+        <Button variant="primary" onClick={submit} disabled={!valid||loading} icon={<CheckIcon size={12}/>}>{loading?'Creando…':'Crear usuario'}</Button>
+      </div>
+    </div>
+  </div>;
+}
+
+// ── ConfigScreen ──
+function ConfigScreen({go,product,setProduct,user,onLogout}){
+  const [cfg,setCfg]=React.useState(null);
+  const [loading,setLoading]=React.useState(true);
+  const [saving,setSaving]=React.useState(false);
+  const [apiKey,setApiKey]=React.useState('');
+  const [model,setModel]=React.useState('claude-sonnet-4-6');
+  const [estudio,setEstudio]=React.useState('');
+  const [msg,setMsg]=React.useState(null); // {type:'ok'|'error', text}
+  const [showKey,setShowKey]=React.useState(false);
+
+  React.useEffect(()=>{
+    fetch('/api/admin/config',{credentials:'include'})
+      .then(r=>r.json())
+      .then(d=>{
+        if(d.ok){
+          setCfg(d);
+          setModel(d.model||'claude-sonnet-4-6');
+          setEstudio(d.estudio_nombre||'');
+        }
+      })
+      .catch(()=>{})
+      .finally(()=>setLoading(false));
+  },[]);
+
+  const save=async()=>{
+    setSaving(true);setMsg(null);
+    const body={model,estudio_nombre:estudio};
+    if(apiKey.trim()) body.anthropic_api_key=apiKey.trim();
+    try{
+      const r=await fetch('/api/admin/config',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify(body)});
+      const d=await r.json();
+      if(d.ok&&d.errors&&d.errors.length===0){
+        setMsg({type:'ok',text:`Guardado: ${d.saved.join(', ')||'sin cambios'}`});
+        setApiKey('');
+        // Refrescar estado de key
+        fetch('/api/admin/config',{credentials:'include'}).then(r=>r.json()).then(d=>{if(d.ok)setCfg(d);});
+      } else if(d.errors&&d.errors.length>0){
+        setMsg({type:'error',text:d.errors.join(' · ')});
+      } else {
+        setMsg({type:'ok',text:'Sin cambios.'});
+      }
+    }catch{setMsg({type:'error',text:'Error de conexión.'});}
+    finally{setSaving(false);}
+  };
+
+  const MODELS=[
+    {id:'claude-sonnet-4-6',label:'Claude Sonnet 4.6',desc:'Mejor calidad · Recomendado'},
+    {id:'claude-haiku-4-5', label:'Claude Haiku 4.5', desc:'Más rápido · Menor costo'},
+    {id:'claude-opus-4-5',  label:'Claude Opus 4.5',  desc:'Máxima precisión · Más lento'},
+  ];
+
+  const inp={width:'100%',padding:'10px 12px',border:`1.5px solid ${foliar.line}`,borderRadius:foliar.radius.sm,fontSize:13,fontFamily:foliar.mono,color:foliar.ink,background:foliar.surface,outline:'none',boxSizing:'border-box'};
+
+  return <Shell hideStepper product={product} setProduct={setProduct} go={go} activeLib="config" user={user} onLogout={onLogout}>
+    <div style={{flex:1,overflow:'auto',padding:'36px 40px'}}>
+      <div style={{maxWidth:680,margin:'0 auto'}}>
+        <div style={{fontSize:11,color:foliar.accent,fontFamily:foliar.mono,letterSpacing:.4,marginBottom:8,textTransform:'uppercase',fontWeight:500}}>— administración</div>
+        <h1 style={{fontSize:32,fontWeight:600,letterSpacing:-.8,margin:0,color:foliar.ink,lineHeight:1.1}}>Configuración</h1>
+        <p style={{fontSize:13.5,color:foliar.inkSoft,margin:'8px 0 28px',lineHeight:1.5}}>Ajustes del agente. Solo visible para administradores.</p>
+
+        {loading&&<div style={{color:foliar.inkMuted,fontSize:13}}>Cargando…</div>}
+
+        {!loading&&<div style={{display:'flex',flexDirection:'column',gap:24}}>
+
+          {/* API Key */}
+          <div style={{background:foliar.surface,border:`1px solid ${foliar.line}`,borderRadius:foliar.radius.lg,padding:'22px 24px'}}>
+            <div style={{fontSize:13,fontWeight:600,color:foliar.ink,marginBottom:4}}>API Key de Anthropic</div>
+            <div style={{fontSize:12,color:foliar.inkMuted,marginBottom:cfg?.api_key_env?8:14}}>
+              Estado actual: <span style={{fontFamily:foliar.mono,color:cfg?.api_key_set?foliar.success:foliar.danger,fontWeight:500}}>{cfg?.api_key_masked||'—'}</span>
+            </div>
+            {cfg?.api_key_env
+              ? <div style={{display:'flex',alignItems:'center',gap:8,padding:'10px 12px',background:'#EAF1EC',border:'1px solid #B9D9C4',borderRadius:foliar.radius.sm,fontSize:12,color:foliar.success}}>
+                  <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M11 7H5a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1z"/><path d="M8 4a3 3 0 0 0-3 3v0"/></svg>
+                  <span>La API key está configurada como <b>variable de entorno del servidor</b>. No se puede cambiar desde la UI — es la configuración más segura.</span>
+                </div>
+              : <>
+                  <label style={{fontSize:11,color:foliar.inkSoft,fontWeight:500,marginBottom:6,display:'block'}}>Nueva API key <span style={{color:foliar.inkMuted,fontWeight:400}}>(dejá vacío para no cambiar)</span></label>
+                  <div style={{display:'flex',gap:8}}>
+                    <input value={apiKey} onChange={e=>setApiKey(e.target.value)} type={showKey?'text':'password'} placeholder="sk-ant-api03-..." style={{...inp,flex:1}}/>
+                    <button onClick={()=>setShowKey(!showKey)} style={{padding:'0 14px',border:`1.5px solid ${foliar.line}`,borderRadius:foliar.radius.sm,background:foliar.surfaceSoft,color:foliar.inkSoft,cursor:'pointer',fontSize:11,fontFamily:foliar.font,whiteSpace:'nowrap'}}>{showKey?'Ocultar':'Mostrar'}</button>
+                  </div>
+                </>
+            }
+          </div>
+
+          {/* Modelo */}
+          <div style={{background:foliar.surface,border:`1px solid ${foliar.line}`,borderRadius:foliar.radius.lg,padding:'22px 24px'}}>
+            <div style={{fontSize:13,fontWeight:600,color:foliar.ink,marginBottom:4}}>Modelo Claude</div>
+            <div style={{fontSize:12,color:foliar.inkMuted,marginBottom:14}}>El modelo se usa para todas las extracciones de campos.</div>
+            <div style={{display:'flex',flexDirection:'column',gap:8}}>
+              {MODELS.map(m=><div key={m.id} onClick={()=>setModel(m.id)} style={{padding:'12px 14px',border:`1.5px solid ${model===m.id?foliar.accent:foliar.line}`,borderRadius:foliar.radius.md,cursor:'pointer',background:model===m.id?foliar.accentPale:foliar.surface,display:'flex',alignItems:'center',gap:12,transition:'border-color .12s'}}>
+                <span style={{width:16,height:16,borderRadius:8,border:`1.5px solid ${model===m.id?foliar.accent:foliar.lineStrong}`,background:model===m.id?foliar.accent:'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>{model===m.id&&<span style={{width:6,height:6,borderRadius:3,background:'#fff'}}/>}</span>
+                <div style={{flex:1}}><div style={{fontSize:13,fontWeight:500,color:foliar.ink}}>{m.label}</div><div style={{fontSize:11,color:foliar.inkMuted,marginTop:1}}>{m.desc}</div></div>
+              </div>)}
+            </div>
+          </div>
+
+          {/* Nombre del estudio */}
+          <div style={{background:foliar.surface,border:`1px solid ${foliar.line}`,borderRadius:foliar.radius.lg,padding:'22px 24px'}}>
+            <div style={{fontSize:13,fontWeight:600,color:foliar.ink,marginBottom:4}}>Nombre del estudio</div>
+            <div style={{fontSize:12,color:foliar.inkMuted,marginBottom:14}}>Se muestra en la pantalla de inicio de sesión.</div>
+            <input value={estudio} onChange={e=>setEstudio(e.target.value)} placeholder="Estudio Arrechea" style={inp}/>
+          </div>
+
+          {msg&&<div style={{padding:'11px 14px',borderRadius:foliar.radius.sm,background:msg.type==='ok'?foliar.successPale:'#FBEDE9',border:`1px solid ${msg.type==='ok'?'#B9D9C4':'#E9BFB4'}`,fontSize:12.5,color:msg.type==='ok'?foliar.success:'#8B3A2D'}}>{msg.text}</div>}
+
+          <div style={{display:'flex',justifyContent:'flex-end'}}>
+            <Button variant="primary" size="lg" onClick={save} disabled={saving} icon={<CheckIcon size={13}/>}>{saving?'Guardando…':'Guardar cambios'}</Button>
+          </div>
+        </div>}
+      </div>
+    </div>
+  </Shell>;
+}
+
+// ── BatchScreen ──
+function BatchScreen({go,product,setProduct,user,onLogout}){
+  const [mode,setMode]=React.useState('upload'); // 'upload' | 'folder'
+  const [phase,setPhase]=React.useState('upload');
+  const [files,setFiles]=React.useState([]);
+  const [dragOver,setDragOver]=React.useState(false);
+  const [loading,setLoading]=React.useState(false);
+  const [error,setError]=React.useState(null);
+  const [batchToken,setBatchToken]=React.useState(null);
+  const [fileStatuses,setFileStatuses]=React.useState([]);
+  const [summary,setSummary]=React.useState(null);
+  const [inputFolder,setInputFolder]=React.useState('');
+  const [outputFolder,setOutputFolder]=React.useState('');
+  const [ctrlState,setCtrlState]=React.useState('running'); // 'running'|'paused'|'stopped'
+  const [ctrlLoading,setCtrlLoading]=React.useState(false);
+  // Retry state
+  const [activeSseToken,setActiveSseToken]=React.useState(null); // token activo para SSE (puede ser retry)
+  const [retryIndexMap,setRetryIndexMap]=React.useState(null);   // [orig_i0, orig_i1, ...] o null
+  const [retryToken,setRetryToken]=React.useState(null);         // token del retry (para descargas)
+  const [retryError,setRetryError]=React.useState(null);
+  const fileRef=React.useRef();
+
+  // Cargar rutas del escritorio al montar
+  React.useEffect(()=>{
+    fetch('/api/desktop_path',{credentials:'include'}).then(r=>r.json()).then(d=>{
+      if(d.desktop){
+        setInputFolder(d.desktop+'\\lote_entrada');
+        setOutputFolder(d.desktop+'\\lote_salida');
+      }
+    }).catch(()=>{});
+  },[]);
+
+  const addFiles=fs=>{
+    const pdfs=Array.from(fs).filter(f=>f.type==='application/pdf');
+    if(!pdfs.length){setError('Seleccioná archivos PDF.');return;}
+    setError(null);
+    setFiles(prev=>[...prev,...pdfs].slice(0,50));
+  };
+
+  const startBatch=async()=>{
+    if(!files.length){setError('Seleccioná al menos un PDF.');return;}
+    _foliarRequestNotif();
+    setLoading(true);
+    try{
+      const fd=new FormData();
+      files.forEach(f=>fd.append('pdfs',f));
+      const r=await fetch('/api/batch/start',{method:'POST',body:fd,credentials:'include'});
+      const data=await r.json();
+      if(data.token){setBatchToken(data.token);setFileStatuses(files.map(f=>({name:f.name,status:'pending',output:null,err:null})));setPhase('processing');}
+      else{setError(data.error||'Error al iniciar el lote.');}
+    }catch{setError('Error de conexión.');}
+    finally{setLoading(false);}
+  };
+
+  const startFolderBatch=async()=>{
+    if(!inputFolder.trim()){setError('Ingresá la carpeta de entrada.');return;}
+    if(!outputFolder.trim()){setError('Ingresá la carpeta de salida.');return;}
+    _foliarRequestNotif();
+    setLoading(true);setError(null);
+    try{
+      const r=await fetch('/api/batch/start_folder',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({input_folder:inputFolder.trim(),output_folder:outputFolder.trim()})});
+      const data=await r.json();
+      if(data.token){
+        setBatchToken(data.token);
+        setFileStatuses((data.names||[]).map(n=>({name:n,status:'pending',output:null,err:null})));
+        setPhase('processing');
+      }else{setError(data.error||'Error al iniciar el lote.');}
+    }catch{setError('Error de conexión.');}
+    finally{setLoading(false);}
+  };
+
+  const batchCtrl=async(action)=>{
+    const tok=activeSseToken||batchToken;
+    if(!tok)return;
+    setCtrlLoading(true);
+    try{await fetch(`/api/batch/${action}/${tok}`,{method:'POST',credentials:'include'});}
+    catch{}
+    finally{setCtrlLoading(false);}
+  };
+
+  const startRetry=async()=>{
+    setRetryError(null);setCtrlLoading(true);
+    try{
+      const r=await fetch(`/api/batch/retry/${batchToken}`,{method:'POST',credentials:'include'});
+      const data=await r.json();
+      if(!data.ok){setRetryError(data.error||'Error al reintentar.');return;}
+      // Resetear solo los índices fallidos a 'pending'
+      setFileStatuses(p=>p.map((f,i)=>data.indices.includes(i)?{...f,status:'pending',err:null}:f));
+      setRetryIndexMap(data.indices);   // mapeo: sse_index → orig_index
+      setRetryToken(data.token);
+      setActiveSseToken(data.token);
+      setCtrlState('running');
+      setPhase('processing');
+    }catch{setRetryError('Error de conexión.');}
+    finally{setCtrlLoading(false);}
+  };
+
+  React.useEffect(()=>{
+    const sseToken=activeSseToken||batchToken;
+    if(phase!=='processing'||!sseToken)return;
+    const es=new EventSource(`/api/batch/stream/${sseToken}`);
+    es.onmessage=e=>{
+      try{
+        const msg=JSON.parse(e.data);
+        // Traducir índice SSE → índice original (si es retry)
+        const idx=retryIndexMap?retryIndexMap[msg.index]:msg.index;
+        if(msg.type==='file_start'){setFileStatuses(p=>p.map((f,i)=>i===idx?{...f,status:'processing'}:f));}
+        if(msg.type==='file_done'){setFileStatuses(p=>p.map((f,i)=>i===idx?{...f,status:'done',sseIdx:msg.index,sseToken:sseToken,output:msg.output}:f));}
+        if(msg.type==='file_error'){setFileStatuses(p=>p.map((f,i)=>i===idx?{...f,status:'error',err:msg.message}:f));}
+        if(msg.type==='file_skipped'){setFileStatuses(p=>p.map((f,i)=>i===idx?{...f,status:'skipped'}:f));}
+        if(msg.type==='batch_control'){setCtrlState(msg.state);}
+        if(msg.type==='batch_done'){
+          const sk=msg.skipped||0;
+          const errs=msg.total-msg.ok-sk;
+          setSummary(prev=>({
+            ok:(prev?prev.ok:0)+msg.ok,
+            errors:errs,
+            skipped:sk,
+            total:prev?prev.total:msg.total,
+            stopped:msg.stopped,
+          }));
+          es.close();setPhase('done');
+          if(msg.stopped){
+            _foliarNotify('Lote detenido','Se procesaron '+msg.ok+' de '+msg.total+' archivos.');
+          }else if(errs>0){
+            _foliarNotify('Lote completado con errores',msg.ok+' ok · '+errs+' con error de '+msg.total+' archivos.');
+          }else{
+            _foliarNotify('✅ Lote completado',msg.ok+' formulario'+(msg.ok!==1?'s':'')+' procesado'+(msg.ok!==1?'s':'')+' correctamente.');
+          }
+        }
+      }catch{}
+    };
+    es.onerror=()=>{es.close();};
+    return()=>es.close();
+  },[phase,activeSseToken,batchToken,retryIndexMap]);
+
+  const reset=()=>{setPhase('upload');setFiles([]);setBatchToken(null);setFileStatuses([]);setSummary(null);setError(null);setMode('upload');setCtrlState('running');setActiveSseToken(null);setRetryIndexMap(null);setRetryToken(null);setRetryError(null);};
+
+  const stIcon=(st)=>{
+    if(st==='pending')return <span style={{width:18,height:18,borderRadius:9,background:foliar.surfaceSunken,border:`1px solid ${foliar.line}`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}><span style={{width:5,height:5,borderRadius:3,background:foliar.inkFaint}}/></span>;
+    if(st==='processing')return <span style={{width:18,height:18,borderRadius:9,border:`1.5px solid ${foliar.accent}`,borderTopColor:'transparent',animation:'foliar-spin 1s linear infinite',flexShrink:0,display:'block'}}/>;
+    if(st==='done')return <span style={{width:18,height:18,borderRadius:9,background:foliar.success,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,color:'#fff'}}><CheckIcon size={10} stroke={2.2}/></span>;
+    return <span style={{width:18,height:18,borderRadius:9,background:foliar.danger,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,color:'#fff',fontSize:11,fontWeight:700,fontFamily:foliar.mono}}>!</span>;
+  };
+
+  const stBadge={pending:{bg:foliar.surfaceSunken,fg:foliar.inkMuted,label:'En espera'},processing:{bg:foliar.accentPale,fg:foliar.accent,label:'Procesando'},done:{bg:foliar.successPale,fg:foliar.success,label:'Listo'},error:{bg:'#FBEDE9',fg:foliar.danger,label:'Error'},skipped:{bg:'#F5F0E8',fg:foliar.inkMuted,label:'Omitido'}};
+  const doneCount=fileStatuses.filter(f=>f.status==='done'||f.status==='error').length;
+
+  return <Shell hideStepper product={product} setProduct={setProduct} go={go} activeLib="batch" user={user} onLogout={onLogout}>
+    <div style={{flex:1,overflow:'auto',padding:'36px 40px'}}>
+      <div style={{maxWidth:900,margin:'0 auto'}}>
+        <div style={{fontSize:11,color:foliar.accent,fontFamily:foliar.mono,letterSpacing:.4,marginBottom:8,textTransform:'uppercase',fontWeight:500}}>— herramientas</div>
+        <div style={{display:'flex',alignItems:'flex-end',justifyContent:'space-between',gap:24,marginBottom:28}}>
+          <div><h1 style={{fontSize:32,fontWeight:600,letterSpacing:-.8,margin:0,color:foliar.ink,lineHeight:1.1}}>Procesamiento en lote</h1><p style={{fontSize:13.5,color:foliar.inkSoft,margin:'8px 0 0',lineHeight:1.5}}>Subí varios PDFs y el agente completará el formulario para cada uno automáticamente.</p></div>
+          {phase!=='upload'&&<Button variant="outline" onClick={reset}>Nuevo lote</Button>}
+        </div>
+
+        {phase==='upload'&&<>
+          {/* ── Selector de modo ── */}
+          <div style={{display:'flex',gap:2,background:foliar.surfaceSoft,border:`1px solid ${foliar.line}`,borderRadius:999,padding:3,width:'fit-content',marginBottom:22}}>
+            {[['upload','Subir archivos'],['folder','Desde carpeta']].map(([id,label])=><button key={id} onClick={()=>{setMode(id);setError(null);}} style={{padding:'5px 16px',borderRadius:999,border:'none',cursor:'pointer',background:mode===id?foliar.surface:'transparent',boxShadow:mode===id?foliar.shadow1:'none',fontSize:12.5,fontWeight:mode===id?500:400,color:foliar.ink,fontFamily:foliar.font}}>{label}</button>)}
+          </div>
+
+          {/* ── Modo: subir archivos ── */}
+          {mode==='upload'&&<>
+            <input ref={fileRef} type="file" accept=".pdf" multiple style={{display:'none'}} onChange={e=>addFiles(e.target.files)}/>
+            <div onDragEnter={e=>{e.preventDefault();setDragOver(true);}} onDragLeave={e=>{if(!e.currentTarget.contains(e.relatedTarget))setDragOver(false);}} onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();setDragOver(false);addFiles(e.dataTransfer.files);}} onClick={()=>fileRef.current.click()} style={{padding:'46px 20px',textAlign:'center',background:dragOver?foliar.accentPale:foliar.surface,border:`1.5px dashed ${dragOver?foliar.accent:foliar.lineStrong}`,borderRadius:foliar.radius.lg,cursor:'pointer',transition:'background .15s,border-color .15s',marginBottom:files.length?16:0}}>
+              <div style={{width:52,height:52,margin:'0 auto 14px',background:foliar.accentPale,color:foliar.accent,borderRadius:26,display:'flex',alignItems:'center',justifyContent:'center'}}><UploadIcon size={22} stroke={1.8}/></div>
+              <div style={{fontSize:15.5,fontWeight:500,color:foliar.ink}}>Arrastrá PDFs acá</div>
+              <div style={{fontSize:12,color:foliar.inkMuted,marginTop:4}}>o seleccioná · máx. 50 archivos</div>
+              <div style={{display:'flex',gap:8,justifyContent:'center',marginTop:18}} onClick={e=>e.stopPropagation()}><Button variant="primary" size="sm" icon={<UploadIcon size={12}/>} onClick={()=>fileRef.current.click()}>Elegir archivos</Button></div>
+            </div>
+            {files.length>0&&<div style={{background:foliar.surface,border:`1px solid ${foliar.line}`,borderRadius:foliar.radius.md,overflow:'hidden',marginBottom:16}}>
+              <div style={{padding:'10px 16px',borderBottom:`1px solid ${foliar.line}`,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                <div style={{fontSize:11,color:foliar.inkMuted,fontFamily:foliar.mono,letterSpacing:.3,textTransform:'uppercase',fontWeight:500}}>{files.length} PDF{files.length!==1?'s':''} seleccionado{files.length!==1?'s':''}</div>
+                <button onClick={e=>{e.stopPropagation();setFiles([]);}} style={{background:'transparent',border:'none',fontSize:11,color:foliar.inkMuted,cursor:'pointer',fontFamily:foliar.font}}>Limpiar todo</button>
+              </div>
+              <div style={{maxHeight:240,overflow:'auto'}}>
+                {files.map((f,i)=><div key={i} style={{display:'flex',alignItems:'center',gap:10,padding:'9px 16px',borderBottom:i<files.length-1?`1px solid ${foliar.lineSoft}`:'none'}}>
+                  <span style={{display:'flex',color:foliar.accent,flexShrink:0}}><FileIcon size={13}/></span>
+                  <div style={{flex:1,minWidth:0}}><div style={{fontSize:12.5,color:foliar.ink,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{f.name}</div><div style={{fontSize:10.5,color:foliar.inkMuted,fontFamily:foliar.mono}}>{(f.size/1024).toFixed(0)} KB</div></div>
+                  <button onClick={e=>{e.stopPropagation();setFiles(prev=>prev.filter((_,j)=>j!==i));}} style={{background:'transparent',border:'none',color:foliar.inkMuted,cursor:'pointer',padding:'2px 6px',fontSize:15}}>×</button>
+                </div>)}
+              </div>
+            </div>}
+            {error&&<div style={{marginBottom:12,padding:'10px 12px',background:'#FBEDE9',border:'1px solid #E9BFB4',borderRadius:foliar.radius.sm,fontSize:12,color:'#8B3A2D'}}>{error}</div>}
+            <div style={{display:'flex',justifyContent:'flex-end'}}>
+              <Button variant="primary" size="lg" onClick={startBatch} disabled={!files.length||loading} iconRight={<ArrowIcon size={13}/>}>{loading?'Iniciando…':`Procesar ${files.length||''} PDF${files.length!==1?'s':''}`}</Button>
+            </div>
+          </>}
+
+          {/* ── Modo: desde carpeta ── */}
+          {mode==='folder'&&<>
+            <div style={{background:foliar.surface,border:`1px solid ${foliar.line}`,borderRadius:foliar.radius.lg,padding:'28px 28px 24px',display:'flex',flexDirection:'column',gap:20}}>
+              <div>
+                <label style={{fontSize:11,color:foliar.inkSoft,fontWeight:500,marginBottom:6,display:'block'}}>Carpeta de entrada <span style={{color:foliar.inkMuted,fontFamily:foliar.mono,fontWeight:400}}>(donde están los PDFs)</span></label>
+                <input value={inputFolder} onChange={e=>setInputFolder(e.target.value)} placeholder="C:\Users\...\Desktop\lote_entrada" style={{width:'100%',padding:'10px 12px',border:`1.5px solid ${foliar.line}`,borderRadius:foliar.radius.sm,fontSize:12.5,fontFamily:foliar.mono,color:foliar.ink,background:foliar.surface,outline:'none',boxSizing:'border-box'}}/>
+                <div style={{fontSize:11,color:foliar.inkMuted,marginTop:5}}>El agente va a leer todos los archivos <b>.pdf</b> que haya en esa carpeta.</div>
+              </div>
+              <div>
+                <label style={{fontSize:11,color:foliar.inkSoft,fontWeight:500,marginBottom:6,display:'block'}}>Carpeta de salida <span style={{color:foliar.inkMuted,fontFamily:foliar.mono,fontWeight:400}}>(donde se guardan los formularios)</span></label>
+                <input value={outputFolder} onChange={e=>setOutputFolder(e.target.value)} placeholder="C:\Users\...\Desktop\lote_salida" style={{width:'100%',padding:'10px 12px',border:`1.5px solid ${foliar.line}`,borderRadius:foliar.radius.sm,fontSize:12.5,fontFamily:foliar.mono,color:foliar.ink,background:foliar.surface,outline:'none',boxSizing:'border-box'}}/>
+                <div style={{fontSize:11,color:foliar.inkMuted,marginTop:5}}>Se van a guardar como <b>formulario_[nombre_original].pdf</b>. La carpeta se crea si no existe.</div>
+              </div>
+              <div style={{padding:'12px 14px',background:foliar.accentPale,borderRadius:foliar.radius.sm,fontSize:12,color:foliar.accent,display:'flex',gap:8,alignItems:'flex-start'}}>
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" style={{flexShrink:0,marginTop:1}}><circle cx="8" cy="8" r="6"/><path d="M8 7v4M8 5.5v.5"/></svg>
+                <span>Los PDFs originales <b>no se modifican</b> ni se eliminan. Solo se generan nuevos archivos en la carpeta de salida.</span>
+              </div>
+            </div>
+            {error&&<div style={{marginTop:12,padding:'10px 12px',background:'#FBEDE9',border:'1px solid #E9BFB4',borderRadius:foliar.radius.sm,fontSize:12,color:'#8B3A2D'}}>{error}</div>}
+            <div style={{display:'flex',justifyContent:'flex-end',marginTop:16}}>
+              <Button variant="primary" size="lg" onClick={startFolderBatch} disabled={loading||!inputFolder.trim()||!outputFolder.trim()} iconRight={<ArrowIcon size={13}/>}>{loading?'Leyendo carpeta…':'Iniciar procesamiento'}</Button>
+            </div>
+          </>}
+        </>}
+
+        {(phase==='processing'||phase==='done')&&<>
+          {phase==='processing'&&<div style={{marginBottom:20,padding:'14px 18px',background:ctrlState==='paused'?'#FFF8EE':foliar.accentPale,border:`1px solid ${ctrlState==='paused'?'#E8DCB7':foliar.line}`,borderRadius:foliar.radius.md,display:'flex',alignItems:'center',gap:12,flexWrap:'wrap'}}>
+            {ctrlState==='running'&&<span style={{width:14,height:14,borderRadius:7,border:`1.5px solid ${foliar.accent}`,borderTopColor:'transparent',animation:'foliar-spin 1s linear infinite',display:'block',flexShrink:0}}/>}
+            {ctrlState==='paused'&&<span style={{width:14,height:14,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,gap:2}}>
+              <span style={{width:4,height:12,background:foliar.warn,borderRadius:1,display:'block'}}/>
+              <span style={{width:4,height:12,background:foliar.warn,borderRadius:1,display:'block'}}/>
+            </span>}
+            <div style={{flex:1,fontSize:13,color:ctrlState==='paused'?foliar.warn:foliar.accent,fontWeight:500}}>
+              {ctrlState==='paused'?'En pausa — ':''}{doneCount} de {fileStatuses.length} completados
+            </div>
+            <div style={{display:'flex',gap:8,flexShrink:0}}>
+              {ctrlState==='running'&&<button disabled={ctrlLoading} onClick={()=>{setCtrlState('paused');batchCtrl('pause');}} style={{padding:'5px 14px',borderRadius:foliar.radius.sm,border:`1px solid ${foliar.line}`,background:foliar.surface,color:foliar.ink,fontSize:12,fontWeight:500,cursor:'pointer',fontFamily:foliar.font,opacity:ctrlLoading?0.6:1}}>⏸ Pausar</button>}
+              {ctrlState==='paused'&&<button disabled={ctrlLoading} onClick={()=>{setCtrlState('running');batchCtrl('resume');}} style={{padding:'5px 14px',borderRadius:foliar.radius.sm,border:`1px solid ${foliar.accent}`,background:foliar.accentPale,color:foliar.accent,fontSize:12,fontWeight:500,cursor:'pointer',fontFamily:foliar.font,opacity:ctrlLoading?0.6:1}}>▶ Reanudar</button>}
+              <button disabled={ctrlLoading} onClick={()=>{setCtrlState('stopped');batchCtrl('stop');}} style={{padding:'5px 14px',borderRadius:foliar.radius.sm,border:`1px solid #E9BFB4`,background:'#FBEDE9',color:foliar.danger,fontSize:12,fontWeight:500,cursor:'pointer',fontFamily:foliar.font,opacity:ctrlLoading?0.6:1}}>✕ Detener</button>
+            </div>
+          </div>}
+          {phase==='done'&&summary&&<div style={{marginBottom:20,padding:'14px 18px',background:summary.stopped?'#FFF6E5':summary.errors===0?foliar.successPale:'#FFF6E5',border:`1px solid ${summary.stopped?'#E8DCB7':summary.errors===0?'#B9D9C4':'#E8DCB7'}`,borderRadius:foliar.radius.md,display:'flex',alignItems:'center',justifyContent:'space-between',gap:16,flexWrap:'wrap'}}>
+            <div style={{display:'flex',alignItems:'center',gap:10}}>
+              <span style={{width:22,height:22,borderRadius:11,background:summary.stopped?foliar.warn:summary.errors===0?foliar.success:foliar.warn,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',flexShrink:0}}><CheckIcon size={12} stroke={2.2}/></span>
+              <div style={{fontSize:13.5,color:foliar.ink,fontWeight:500}}>
+                {summary.ok} de {summary.total} completado{summary.ok!==1?'s':''}
+                {summary.errors>0&&<span style={{color:foliar.danger}}> · {summary.errors} con error</span>}
+                {summary.skipped>0&&<span style={{color:foliar.inkMuted}}> · {summary.skipped} omitido{summary.skipped!==1?'s':''}</span>}
+                {summary.stopped&&<span style={{color:foliar.warn}}> (detenido manualmente)</span>}
+                {mode==='folder'&&outputFolder&&<span style={{fontSize:11,color:foliar.inkMuted,fontFamily:foliar.mono,display:'block',marginTop:3}}>Guardados en: {outputFolder}</span>}
+              </div>
+            </div>
+            <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+              {summary.errors>0&&!retryIndexMap&&<button disabled={ctrlLoading} onClick={startRetry} style={{padding:'6px 14px',borderRadius:foliar.radius.sm,border:`1px solid ${foliar.accent}`,background:foliar.accentPale,color:foliar.accent,fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:foliar.font,opacity:ctrlLoading?0.6:1}}>🔄 Reintentar fallidos ({summary.errors})</button>}
+              {summary.errors>0&&retryIndexMap&&summary.errors===0&&<span style={{fontSize:12,color:foliar.success,fontWeight:500}}>✅ Todos reintentados con éxito</span>}
+              {summary.ok>0&&mode==='upload'&&<Button variant="primary" size="sm" icon={<DownloadIcon size={12}/>} onClick={()=>window.open(`/api/batch/download/${retryToken||batchToken}/zip`,'_blank')}>Descargar ZIP</Button>}
+              {summary.ok>0&&mode==='folder'&&<Button variant="outline" size="sm" icon={<DownloadIcon size={12}/>} onClick={()=>window.open(`/api/batch/download/${retryToken||batchToken}/zip`,'_blank')}>Descargar ZIP</Button>}
+            </div>
+          </div>}
+          {retryError&&<div style={{marginBottom:12,padding:'10px 12px',background:'#FBEDE9',border:'1px solid #E9BFB4',borderRadius:foliar.radius.sm,fontSize:12,color:'#8B3A2D'}}>{retryError}</div>}
+          <div style={{background:foliar.surface,border:`1px solid ${foliar.line}`,borderRadius:foliar.radius.md,overflow:'hidden'}}>
+            <div style={{display:'grid',gridTemplateColumns:'28px 1fr 100px 120px',padding:'9px 16px',borderBottom:`1px solid ${foliar.line}`,fontSize:10.5,color:foliar.inkMuted,fontFamily:foliar.mono,letterSpacing:.3,textTransform:'uppercase',fontWeight:500}}>
+              <div/><div>Archivo</div><div>Estado</div><div/>
+            </div>
+            {fileStatuses.map((f,i)=>{
+              const b=stBadge[f.status]||stBadge.pending;
+              return <div key={i} style={{display:'grid',gridTemplateColumns:'28px 1fr 100px 120px',padding:'11px 16px',alignItems:'center',borderBottom:i<fileStatuses.length-1?`1px solid ${foliar.lineSoft}`:'none'}}>
+                {stIcon(f.status)}
+                <div style={{minWidth:0,paddingLeft:6}}><div style={{fontSize:12.5,color:foliar.ink,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{f.name}</div>{f.err&&<div style={{fontSize:11,color:foliar.danger,marginTop:2,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{f.err}</div>}</div>
+                <div><span style={{display:'inline-flex',padding:'2px 8px',borderRadius:999,background:b.bg,color:b.fg,fontSize:10.5,fontWeight:500}}>{b.label}</span></div>
+                <div style={{display:'flex',justifyContent:'flex-end'}}>
+                  {f.status==='done'&&<Button variant="ghost" size="sm" icon={<DownloadIcon size={11}/>} onClick={()=>{const tok=f.sseToken||batchToken;const idx=f.sseIdx!==undefined?f.sseIdx:i;window.open(`/api/batch/download/${tok}/${idx}`,'_blank');}}>Descargar</Button>}
+                </div>
+              </div>;
+            })}
+          </div>
+        </>}
+      </div>
+    </div>
+  </Shell>;
+}
+
+// ── FoliarApp (main router) ──
+function FoliarApp(){
+  const [screen,setScreen]=React.useState('login');
+  const [user,setUser]=React.useState(null);
+  const [loadingAuth,setLoadingAuth]=React.useState(true);
+  const [product,setProduct]=React.useState('formulario');
+  const [combo,setCombo]=React.useState(['formulario','telegrama','escrito']);
+  const [token,setToken]=React.useState(null);
+  const [uploadedFile,setUploadedFile]=React.useState(null);
+  const [extractedFields,setExtractedFields]=React.useState({});
+  const [edits,setEdits]=React.useState({});
+  const [comboStatus,setComboStatus]=React.useState({});
+
+  React.useEffect(()=>{
+    fetch('/api/me',{credentials:'include'}).then(r=>r.json()).then(d=>{if(d.ok)setUser({username:d.username,rol:d.rol||'Editor'});}).catch(()=>{}).finally(()=>setLoadingAuth(false));
+  },[]);
+
+  const go=s=>{setScreen(s);};
+  const onLogin=async u=>{
+    // fetch real role since /auth/login doesn't return it
+    try{const r=await fetch('/api/me',{credentials:'include'});const d=await r.json();if(d.ok)setUser({username:d.username,rol:d.rol||'Editor'});else setUser(u);}catch{setUser(u);}
+    go('upload');
+  };
+  const onLogout=async()=>{try{await fetch('/api/logout',{method:'POST',credentials:'include'});}catch{}setUser(null);setToken(null);setExtractedFields({});setEdits({});go('login');};
+
+  React.useEffect(()=>{if(!loadingAuth&&!user&&screen!=='login')go('login');},[loadingAuth,user]);
+
+  if(loadingAuth) return <div style={{height:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:foliar.canvas}}><div style={{width:28,height:28,border:`2px solid ${foliar.line}`,borderTopColor:foliar.accent,borderRadius:14,animation:'foliar-spin 1s linear infinite'}}/></div>;
+
+  const sharedProps={go,product,setProduct,combo,setCombo,token,setToken,uploadedFile,setUploadedFile,extractedFields,setExtractedFields,edits,setEdits,comboStatus,setComboStatus,user,onLogout};
+
+  return <div className="foliar-app" style={{height:'100vh',width:'100vw',overflow:'hidden',background:foliar.canvas}}>
+    {screen==='login'&&<LoginEntry onLogin={onLogin}/>}
+    {screen==='upload'&&<UploadScreen {...sharedProps}/>}
+    {screen==='processing'&&<ProcessingScreen {...sharedProps}/>}
+    {screen==='review'&&<ReviewScreen {...sharedProps}/>}
+    {screen==='done'&&<DoneScreen {...sharedProps}/>}
+    {screen==='historial'&&<HistorialScreen {...sharedProps}/>}
+    {screen==='estadisticas'&&<EstadisticasScreen {...sharedProps}/>}
+    {screen==='equipo'&&<EquipoScreen {...sharedProps}/>}
+    {screen==='batch'&&<BatchScreen {...sharedProps}/>}
+    {screen==='config'&&<ConfigScreen {...sharedProps}/>}
+  </div>;
+}
+
+Object.assign(window,{FoliarApp});
+})();
+</script>
+
+<!-- ── MOUNT ── -->
+<script type="text/babel" data-presets="react">
+ReactDOM.createRoot(document.getElementById('root')).render(<window.FoliarApp />);
+</script>
+</body>
+</html>

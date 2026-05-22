@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1b6ca8">
+<link rel="manifest" href="/manifest.json">
+<title>Agente IA - Telegrama Ley N 23.789</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;font-size:13px;background:#f0f4f8;color:#1a1a1a;min-height:100vh}
+.container{max-width:900px;margin:0 auto;padding:12px 12px 60px}
+.header{background:#1b6ca8;color:#fff;padding:12px 16px;border-radius:10px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.header h1{font-size:14px;font-weight:700;line-height:1.3}
+.header p{font-size:10px;opacity:.8;margin-top:2px}
+.btn-reset{background:rgba(255,255,255,.2);border:none;color:#fff;padding:7px 12px;border-radius:6px;cursor:pointer;font-size:11px}
+.upload-box{border:2px dashed #1b6ca8;border-radius:14px;padding:40px 20px;text-align:center;cursor:pointer;background:#fff;margin-bottom:12px}
+.upload-box h2{font-size:15px;color:#1b6ca8;margin-bottom:6px;font-weight:700}
+.upload-box p{font-size:12px;color:#666;line-height:1.5}
+.upload-note{font-size:11px;color:#888;line-height:1.6;text-align:center;padding:0 10px}
+.processing{text-align:center;padding:60px 20px}
+.processing h2{font-size:15px;color:#1b6ca8;margin-bottom:8px}
+.processing p{font-size:13px;color:#555;margin-bottom:20px}
+.pbar{height:5px;background:#e0e0e0;border-radius:3px;overflow:hidden;max-width:300px;margin:0 auto}
+.pfill{height:100%;background:#1b6ca8;border-radius:3px;animation:slide 1.4s infinite;width:45%}
+@keyframes slide{0%{transform:translateX(-220%)}100%{transform:translateX(500%)}}
+.reasoning-panel{background:#fff;border:1px solid #b8d4f0;border-radius:10px;padding:14px;margin-bottom:12px}
+.reasoning-panel h3{font-size:12px;font-weight:700;color:#1b6ca8;margin-bottom:10px}
+.reasoning-block{margin-bottom:10px}
+.reasoning-block label{font-size:10px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:3px}
+.rval{font-size:12px;color:#222;line-height:1.5;padding:8px 10px;background:#f5f9ff;border-radius:6px;border:1px solid #dde8f5;white-space:pre-wrap;word-break:break-word}
+.rval.editable{background:#fffdf0;border-color:#ffc107}
+.rval.editable:focus{border-color:#1b6ca8;background:#fff;outline:none}
+.alert{border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:11px;line-height:1.5}
+.alert-warn{background:#fff3cd;border:1px solid #ffc107}
+.alert-ok{background:#d4edda;border:1px solid #28a745}
+.tabs{display:flex;gap:4px;margin-bottom:12px;overflow-x:auto}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:8px 14px;border-radius:8px;border:1px solid #1b6ca8;background:#fff;color:#1b6ca8;cursor:pointer;font-size:12px;white-space:nowrap;min-height:36px;flex-shrink:0}
+.tab.active{background:#1b6ca8;color:#fff;font-weight:700}
+.section{margin-bottom:14px}
+.sec-header{background:#1b6ca8;color:#fff;font-weight:700;font-size:11px;padding:8px 12px;border-radius:8px 8px 0 0}
+.sec-body{border:1px solid #ddd;border-top:none;border-radius:0 0 8px 8px;padding:12px 12px 6px;background:#fff}
+.field-row{margin-bottom:12px}
+.field-row label{display:block;font-size:10px;color:#555;margin-bottom:4px;font-weight:600}
+.field-row input,.field-row textarea{width:100%;border:none;border-bottom:1.5px solid #aaa;outline:none;font-size:13px;padding:4px 0;background:transparent;font-family:Arial,sans-serif;min-height:34px}
+.field-row textarea{border:1px solid #ddd;border-radius:6px;padding:8px;min-height:70px;resize:vertical}
+.field-row input:focus{border-bottom-color:#1b6ca8}
+.field-row textarea:focus{border-color:#1b6ca8;outline:none}
+.row2{display:flex;gap:10px}
+.row2 .field-row{flex:1}
+.row2 .field-row.w2{flex:2}
+.radio-group{display:flex;flex-direction:column;gap:10px;padding:10px 12px}
+.radio-group label{display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer}
+.radio-group input[type=radio]{width:16px;height:16px;accent-color:#1b6ca8}
+.chat-box{border:1px solid #ddd;border-radius:10px;height:280px;overflow-y:auto;padding:12px;background:#fafafa;margin-bottom:10px}
+.msg{display:flex;margin-bottom:10px}
+.msg.user{justify-content:flex-end}
+.msg-bubble{max-width:82%;padding:9px 13px;border-radius:12px;font-size:12px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+.msg.user .msg-bubble{background:#1b6ca8;color:#fff}
+.msg.assistant .msg-bubble{background:#fff;color:#222;border:1px solid #ddd}
+.chat-input-row{display:flex;gap:8px;align-items:flex-end}
+.chat-input-row textarea{flex:1;padding:8px 10px;border-radius:8px;border:1px solid #ccc;font-size:12px;resize:none;height:50px;font-family:Arial,sans-serif;outline:none}
+.btn{padding:9px 18px;border-radius:8px;border:none;cursor:pointer;font-size:12px;font-weight:700;min-height:38px;display:inline-flex;align-items:center;gap:5px}
+.btn:active{opacity:.8}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-primary{background:#1b6ca8;color:#fff}
+.btn-success{background:#28a745;color:#fff}
+.btn-danger{background:#fff;color:#c0392b;border:1px solid #c0392b;font-weight:400}
+.btn-row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.tele-wrap{position:relative;width:100%;max-width:860px;margin:0 auto}
+.tele-wrap img{width:100%;height:auto;display:block}
+.tele-overlay{position:absolute;top:0;left:0;width:100%;height:100%}
+.escrito-doc{font-family:Arial,sans-serif;font-size:12px;line-height:1.8;color:#000;white-space:pre-wrap;padding:10px 0}
+@media print{
+  body{background:#fff;padding:0}
+  .container{padding:0;max-width:100%}
+  .header,.tabs,.alert,.btn-row,.reasoning-panel,
+  #step-upload,#step-processing,#tab-form,#tab-chat,#tab-escrito{display:none!important}
+  #tab-preview{display:block!important}
+  .tele-wrap{max-width:100%}
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="header">
+  <div><h1>Agente IA - Telegrama Ley N 23.789</h1><p id="file-name">Subi el PDF del caso para comenzar</p></div>
+  <button class="btn-reset" onclick="resetAll()">Nuevo</button>
+</div>
+<div id="step-upload">
+  <div class="upload-box" onclick="document.getElementById('file-input').click()">
+    <div style="font-size:44px;margin-bottom:10px">PDF</div>
+    <h2>Subir PDF del caso</h2>
+    <p>Denuncia - Historia clinica - Informe medico - Expediente</p>
+    <input type="file" id="file-input" accept=".pdf" style="display:none" onchange="handleFile(event)">
+    <div style="margin-top:16px;background:#1b6ca8;color:#fff;border-radius:8px;padding:10px 20px;font-size:13px;font-weight:700;display:inline-block">Seleccionar archivo</div>
+  </div>
+  <p class="upload-note">La IA analiza el documento, razona las lesiones y redacta el telegrama y el escrito automaticamente.</p>
+</div>
+<div id="step-processing" style="display:none">
+  <div class="processing">
+    <h2>Analizando el documento...</h2>
+    <p id="progress-text">Leyendo el PDF...</p>
+    <div class="pbar"><div class="pfill"></div></div>
+  </div>
+</div>
+<div id="step-review" style="display:none">
+  <div id="alert-box" class="alert" style="display:none"></div>
+  <div class="reasoning-panel" id="reasoning-panel" style="display:none">
+    <h3>Razonamiento legal - revisa antes de aplicar</h3>
+    <div class="reasoning-block"><label>Mecanica del accidente</label><div class="rval" id="r-mecanica"></div></div>
+    <div class="reasoning-block"><label>Lesiones principales</label><div class="rval" id="r-lesiones-principales"></div></div>
+    <div class="reasoning-block"><label>Secuelas derivadas (editable)</label><div class="rval editable" id="r-lesiones-ampliadas" contenteditable="true"></div></div>
+    <div class="reasoning-block"><label>Estudios requeridos (editable)</label><div class="rval editable" id="r-estudios" contenteditable="true"></div></div>
+    <div class="reasoning-block"><label>Cuerpo del telegrama (editable)</label><div class="rval editable" id="r-cuerpo" contenteditable="true"></div></div>
+    <div class="btn-row">
+      <button class="btn btn-success" onclick="applyReasoning()">Aplicar al telegrama</button>
+      <button class="btn btn-primary" onclick="reRunReasoning()">Volver a razonar</button>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" id="tab-btn-form" onclick="showTab('form')">Formulario</button>
+    <button class="tab" id="tab-btn-chat" onclick="showTab('chat')">Chat IA</button>
+    <button class="tab" id="tab-btn-preview" onclick="showTab('preview')">Vista previa</button>
+    <button class="tab" id="tab-btn-escrito" onclick="showTab('escrito')">Escrito</button>
+  </div>
+  <div id="tab-form">
+    <div class="section"><div class="sec-header">Destinatario</div><div class="sec-body">
+      <div class="field-row"><label>Apellido y nombre o razon social</label><input type="text" id="f_dest_nombre"></div>
+      <div class="field-row"><label>Ramo o actividad principal</label><input type="text" id="f_dest_ramo" value="Aseguradora de riesgos del trabajo"></div>
+      <div class="row2"><div class="field-row w2"><label>Domicilio laboral</label><input type="text" id="f_dest_dom"></div><div class="field-row"><label>Cod. Postal</label><input type="text" id="f_dest_cp"></div></div>
+      <div class="row2"><div class="field-row"><label>Localidad</label><input type="text" id="f_dest_loc"></div><div class="field-row"><label>Provincia</label><input type="text" id="f_dest_prov"></div></div>
+    </div></div>
+    <div class="section"><div class="sec-header">Remitente</div><div class="sec-body">
+      <div class="field-row"><label>Apellido y nombre</label><input type="text" id="f_rem_nombre"></div>
+      <div class="row2"><div class="field-row"><label>DNI N</label><input type="text" id="f_rem_dni"></div><div class="field-row"><label>Fecha telegrama</label><input type="date" id="f_rem_fecha"></div></div>
+      <div class="row2"><div class="field-row w2"><label>Domicilio real</label><input type="text" id="f_rem_dom" value="Lavalle 1675 Piso 7 of 8"></div><div class="field-row"><label>Cod. Postal</label><input type="text" id="f_rem_cp" value="1048"></div></div>
+      <div class="row2"><div class="field-row"><label>Localidad</label><input type="text" id="f_rem_loc" value="Capital Federal"></div><div class="field-row"><label>Provincia</label><input type="text" id="f_rem_prov" value="C.A.B.A."></div></div>
+    </div></div>
+    <div class="section"><div class="sec-header">Datos del accidente</div><div class="sec-body">
+      <div class="field-row"><label>Fecha del accidente</label><input type="date" id="f_fecha_acc"></div>
+      <div class="field-row"><label>Nombre de la ART</label><input type="text" id="f_art"></div>
+      <div class="field-row"><label>Cuerpo del telegrama</label><textarea id="f_cuerpo" rows="7"></textarea></div>
+    </div></div>
+    <div class="section"><div class="sec-header">Tipo de comunicacion</div>
+      <div class="radio-group">
+        <label><input type="radio" name="tipo" value="1"> Comunicacion de renuncia</label>
+        <label><input type="radio" name="tipo" value="2"> Comunicacion de ausencia</label>
+        <label><input type="radio" name="tipo" value="3" checked> Otro tipo de comunicacion</label>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="showTab('preview')">Ver telegrama</button>
+      <button class="btn btn-danger" onclick="clearForm()">Limpiar</button>
+    </div>
+  </div>
+  <div id="tab-chat" style="display:none">
+    <div class="chat-box" id="chat-messages"></div>
+    <div class="chat-input-row">
+      <textarea id="chat-input" placeholder="Completa un dato o hace una consulta..." onkeydown="chatKeydown(event)"></textarea>
+      <button class="btn btn-primary" onclick="sendChat()" id="chat-btn" style="height:50px;padding:0 14px">Enviar</button>
+    </div>
+  </div>
+  <div id="tab-preview" style="display:none">
+    <div class="tele-wrap" id="tele-wrap">
+      <img src="/static/telegrama_fondo.png" alt="Telegrama" id="tele-img">
+      <div class="tele-overlay" id="tele-overlay"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-success" onclick="renderPreview()">Actualizar</button>
+      <button class="btn btn-primary" onclick="window.print()">Imprimir / PDF</button>
+    </div>
+  </div>
+  <div id="tab-escrito" style="display:none">
+    <div class="section"><div class="sec-header">Datos para el escrito</div><div class="sec-body">
+      <div class="row2">
+        <div class="field-row"><label>Nombre del cliente</label><input type="text" id="e_cliente"></div>
+        <div class="field-row"><label>Nombre de la ART</label><input type="text" id="e_art"></div>
+      </div>
+      <div class="row2">
+        <div class="field-row"><label>Nombre del empleador</label><input type="text" id="e_empleador"></div>
+        <div class="field-row"><label>Fecha del accidente</label><input type="date" id="e_fecha"></div>
+      </div>
+      <div class="field-row"><label>Relato de los hechos</label><textarea id="e_hechos" rows="4"></textarea></div>
+    </div></div>
+    <div class="btn-row" style="margin-bottom:14px">
+      <button class="btn btn-primary" onclick="abrirEscrito()">Generar y ver escrito</button>
+      <button class="btn btn-success" onclick="imprimirEscrito()">Imprimir escrito</button>
+    </div>
+    <iframe id="escrito-frame" src="" style="width:100%;height:800px;border:1px solid #ddd;border-radius:8px;display:none"></iframe>
+  </div>
+</div>
+</div>
+<script>
+const API_URL="/api/chat";
+let chatHistory=[],lastPdfB64=null;
+
+const SISTEMA_REASON=`Sos un abogado laboralista argentino experto en accidentes de trabajo y redaccion de telegramas Ley 23.789.
+PROCEDIMIENTO:
+1. Identifica mecanica del accidente, lesion principal, zonas anatomicas.
+2. Detecta TODAS las lesiones omitidas, secuelas, dolor cronico, limitaciones funcionales, afectacion psicologica (SIEMPRE).
+3. Determina estudios: RMN por zona, radiografias, ecografias, electromiografia, evaluacion psicologica, psicodiagnostico, ecodoppler, tomografia.
+4. Redacta el cuerpo del telegrama:
+Parrafo 1: "Me dirijo a ustedes a fin de ampliar la denuncia oportunamente presentada con motivo del accidente de trabajo ocurrido el dia [FECHA]."
+Parrafo 2: "Como consecuencia del hecho sufri [LESIONES]. Asimismo solicito la realizacion de los siguientes estudios y tratamientos medicos: [ESTUDIOS]."
+Parrafo 3: "Solicito se tenga por ampliada la denuncia inicial, se reconozcan la totalidad de las secuelas fisicas y se disponga la cobertura medica integral conforme a la Ley N 24.557.Esta parte impugna expresamente los estudios medicos practicados por [ART], por cuanto no reflejan la real entidad de las lesiones ni el actual estado de salud de la trabajadora,solicitando la realizacion de una nueva evaluacion medica imparcial a fin de garantizar la debida tutela administrativa (conf. Ley 19.549).Asimismo, solicito la aplicacion del baremo vigente al momento del accidente,conforme art. 7 CCyCN y Ley 24.557\nSin otro particular, saludo atentamente."
+LESIONES: CERVICAL->RMN cervical,radiografias,electromiografia. LUMBAR->RMN lumbar,radiografias. HOMBRO->RMN hombro,ecografia. RODILLA->RMN rodilla,radiografias. TOBILLO->RMN,ecodoppler venoso. PSICOLOGICO(SIEMPRE)->evaluacion psicologica,psicodiagnostico.
+ARTS: Provincia ART->PELLEGRINI CARLOS 0091 05,CP 1009,CAPITAL FEDERAL,CABA. EXPERTA ART->AV.LIBERTADOR 6902 12,CP 1429,CAPITAL FEDERAL,CABA. Swiss Medical ART->CORRIENTES 1865 PB,CP 1045,CAPITAL FEDERAL,CABA. Federacion Patronal->Av.51 770,CP B1900AWP,LA PLATA,BUENOS AIRES. ASOCIART->ALEM 621,CP 1001,CAPITAL FEDERAL,CABA. Liderar ART->RECONQUISTA 585 7,CP 1003,CAPITAL FEDERAL,CABA. Prevencion ART->RUTA NAC 34 KM 257,CP 2322,SUNCHALES,SANTA FE. Caminos Protegidos->ARCOS 3631,CP 1429,CAPITAL FEDERAL,CABA.
+Responde UNICAMENTE con JSON: {"destinatario_nombre":"","destinatario_domicilio":"","destinatario_cp":"","destinatario_localidad":"","destinatario_provincia":"","remitente_nombre":"","remitente_dni":"","fecha_accidente":"","art_nombre":"","empleador_nombre":"","relato_hechos":"","mecanica_accidente":"","lesiones_principales":"","lesiones_ampliadas":"","estudios_requeridos":"","cuerpo_telegrama":"","campos_faltantes":[],"notas":""}`;
+
+const SYSTEM_CHAT=`Sos abogado laboralista. Si el usuario da un dato responde SOLO con JSON: {"campo":"id","valor":"valor"}. IDs: f_dest_nombre,f_dest_dom,f_dest_cp,f_dest_loc,f_dest_prov,f_rem_nombre,f_rem_dni,f_rem_fecha,f_fecha_acc,f_art,f_cuerpo.`;
+
+
+async function callAPI(sys,msgs,maxT=2000){
+  const r=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({system:sys,messages:msgs,max_tokens:maxT})});
+  if(!r.ok){const e=await r.json();throw new Error(e.error||"Error")}
+  const d=await r.json();return d.content?.[0]?.text||"";
+}
+function toB64(f){return new Promise((r,j)=>{const fr=new FileReader();fr.onload=()=>r(fr.result.split(",")[1]);fr.onerror=()=>j(new Error("Error"));fr.readAsDataURL(f)})}
+function gv(id){return(document.getElementById(id)?.value||"").trim()}
+function sv(id,v){const e=document.getElementById(id);if(e&&v&&!e.value)e.value=v}
+function svf(id,v){const e=document.getElementById(id);if(e&&v)e.value=v}
+function setText(id,t){const e=document.getElementById(id);if(e)e.textContent=t||""}
+function showStep(s){["upload","processing","review"].forEach(id=>{document.getElementById("step-"+id).style.display=s===id?"block":"none"})}
+function showTab(t){
+  ["form","chat","preview","escrito"].forEach(id=>{
+    const el=document.getElementById("tab-"+id);
+    const btn=document.getElementById("tab-btn-"+id);
+    if(el)el.style.display=t===id?"block":"none";
+    if(btn)btn.classList.toggle("active",t===id);
+  });
+  if(t==="preview")renderPreview();
+  if(t==="escrito")syncEscritoFields();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function setAlert(msg,type){
+  const el=document.getElementById("alert-box");
+  if(!msg){el.style.display="none";return}
+  el.className="alert alert-"+type;el.innerHTML=msg;el.style.display="block";
+}
+async function handleFile(e){
+  const file=e.target.files?.[0];if(!file)return;
+  document.getElementById("file-name").textContent=file.name;
+  showStep("processing");document.getElementById("progress-text").textContent="Leyendo el PDF...";
+  try{const b64=await toB64(file);lastPdfB64=b64;document.getElementById("progress-text").textContent="Razonando lesiones con IA...";await runReasoning(b64);}
+  catch(err){showStep("upload");alert("Error: "+err.message)}
+}
+async function runReasoning(b64){
+  const raw=await callAPI(SISTEMA_REASON,[{role:"user",content:[{type:"document",source:{type:"base64",media_type:"application/pdf",data:b64}},{type:"text",text:"Analiza este documento y responde solo con el JSON."}]}],2000);
+  const m=raw.match(/\{[\s\S]*\}/);
+  if(!m)throw new Error("La IA no devolvio datos validos.");
+  populateFromReasoning(JSON.parse(m[0]));
+}
+async function reRunReasoning(){
+  if(!lastPdfB64){alert("No hay PDF cargado.");return}
+  document.getElementById("reasoning-panel").style.display="none";
+  showStep("processing");document.getElementById("progress-text").textContent="Volviendo a razonar...";
+  try{await runReasoning(lastPdfB64)}catch(err){showStep("review");alert("Error: "+err.message)}
+}
+function populateFromReasoning(p){
+  svf("f_dest_nombre",p.destinatario_nombre);svf("f_dest_dom",p.destinatario_domicilio);
+  svf("f_dest_cp",p.destinatario_cp);svf("f_dest_loc",p.destinatario_localidad);
+  svf("f_dest_prov",p.destinatario_provincia);svf("f_rem_nombre",p.remitente_nombre);
+  svf("f_rem_dni",p.remitente_dni);svf("f_fecha_acc",p.fecha_accidente);
+  svf("f_art",p.art_nombre);svf("f_cuerpo",p.cuerpo_telegrama);
+  setText("r-mecanica",p.mecanica_accidente);setText("r-lesiones-principales",p.lesiones_principales);
+  setText("r-lesiones-ampliadas",p.lesiones_ampliadas);setText("r-estudios",p.estudios_requeridos);
+  setText("r-cuerpo",p.cuerpo_telegrama);
+  if(p.empleador_nombre)svf("e_empleador",p.empleador_nombre);
+  if(p.relato_hechos)svf("e_hechos",p.relato_hechos);
+  const missing=p.campos_faltantes||[];
+  if(missing.length>0){
+    setAlert("<strong>Datos no encontrados ("+missing.length+"):</strong> "+missing.join(" - "),"warn");
+    chatHistory=[{role:"assistant",content:"Documento analizado. Faltan: "+missing.join(", ")}];
+    appendMsg("assistant","Documento analizado.\nFaltan: "+missing.join(", "));
+    document.getElementById("tab-btn-chat").textContent="Chat IA ("+missing.length+")";
+  }else{
+    setAlert("<strong>Todos los datos extraidos.</strong> Revisa el razonamiento.","ok");
+    chatHistory=[{role:"assistant",content:"Analisis completo."}];
+    appendMsg("assistant","Analisis completo.");
+  }
+  document.getElementById("reasoning-panel").style.display="block";
+  showStep("review");showTab("form");
+}
+function applyReasoning(){
+  const c=document.getElementById("r-cuerpo").textContent.trim();
+  if(c)svf("f_cuerpo",c);
+  setAlert("Razonamiento aplicado.","ok");showTab("preview");
+}
+function renderPreview(){
+  const img=document.getElementById("tele-img");
+  const overlay=document.getElementById("tele-overlay");
+  if(!img||!overlay)return;
+  overlay.innerHTML="";
+  const W=img.offsetWidth||860;
+  function addText(text,topP,leftP,widthP,wrap,maxh){
+    if(!text)return;
+    const d=document.createElement("div");
+    d.style.cssText="position:absolute;top:"+topP+"%;left:"+leftP+"%;width:"+widthP+"%;font-family:Arial,sans-serif;font-size:"+(W*0.014)+"px;color:#000;pointer-events:none;"+(wrap?"white-space:pre-wrap;line-height:1.82;text-align:justify;word-break:break-word;":"white-space:nowrap;overflow:hidden;")+(maxh?"max-height:"+maxh+"%;overflow:hidden;":"");
+    d.textContent=text;overlay.appendChild(d);
+  }
+  function addDot(topP,leftP){
+    const d=document.createElement("div");const sz=W*0.013;
+    d.style.cssText="position:absolute;top:"+topP+"%;left:"+leftP+"%;width:"+sz+"px;height:"+sz+"px;border-radius:50%;background:#000;pointer-events:none;";
+    overlay.appendChild(d);
+  }
+  addText(gv("f_dest_nombre"),12.6,5.5,43);addText(gv("f_dest_ramo"),16.1,5.5,43);
+  addText(gv("f_dest_dom"),19.5,5.5,28);addText(gv("f_dest_cp"),19.5,36,11);
+  addText(gv("f_dest_loc"),22.9,5.5,20);addText(gv("f_dest_prov"),22.9,36,18);
+  addText(gv("f_rem_nombre"),12.7,52.4,46);addText(gv("f_rem_dni"),16.0,52.4,22);
+  const fd=gv("f_rem_fecha");let ff="";
+  if(fd){const[y,m,d]=fd.split("-");ff=d+"/"+m+"/"+y;}
+  addText(ff,16.0,83.6,18);addText(gv("f_rem_dom"),19.5,52.4,28);addText(gv("f_rem_cp"),19.5,83.7,16);
+  addText(gv("f_rem_loc"),23.0,52.4,20);addText(gv("f_rem_prov"),23.0,83.7,24);
+  addText(gv("f_cuerpo"),30.6,5.6,88.7,true,57.7);
+  const tipo=document.querySelector("input[name='tipo']:checked")?.value||"3";
+  const tp={"1":[86.8,20],"2":[86.8,55],"3":[86.8,93.3]};
+  if(tp[tipo])addDot(tp[tipo][0],tp[tipo][1]);
+}
+function syncEscritoFields(){
+  sv("e_cliente",gv("f_rem_nombre"));
+  sv("e_art",gv("f_art")||gv("f_dest_nombre"));
+  const fd=gv("f_fecha_acc");
+  if(fd){const e=document.getElementById("e_fecha");if(e&&!e.value)e.value=fd;}
+}
+
+async function generarEscrito(){
+  const cliente=gv("e_cliente"),art=gv("e_art"),empleador=gv("e_empleador");
+  const fechaRaw=gv("e_fecha"),hechos=gv("e_hechos");
+  if(!cliente||!art){alert("Completa el nombre del cliente y la ART.");return;}
+  let fechaFmt=fechaRaw;
+  if(fechaRaw){const[y,m,d]=fechaRaw.split("-");const mes=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];fechaFmt=d+" de "+mes[parseInt(m)-1]+" de "+y;}
+  document.getElementById("escrito-loading").style.display="block";
+  document.getElementById("escrito-content").textContent="";
+  document.getElementById("btn-generar-escrito").disabled=true;
+
+  const sysE=`Sos un abogado laboralista argentino. Genera el escrito reemplazando SOLO los campos entre corchetes. Devuelve el resultado en HTML valido con este formato EXACTO:
+- Titulos de secciones (PARTE ACTORA..., II.- HECHOS, III.- OFRECE PRUEBA, etc.) en <strong><u>texto</u></strong>
+- Subtitulos (III.A, III.B, b.1, b.2, etc.) en <strong><u>texto</u></strong>
+- Texto normal en <p style="text-align:justify;margin:8px 0">
+- Sangria con &nbsp;&nbsp;&nbsp;&nbsp; al inicio de parrafos que la requieran
+- Numeracion de puntos (1.-, 2.-, etc.) con <p style="margin:6px 0 6px 20px">
+- Salto de seccion con <br>
+- El cierre "Proveer de conformidad, SERA JUSTICIA.-" centrado con <p style="text-align:center">
+- NO uses markdown, solo HTML puro
+
+Modelo a reproducir con [NOMBRE_CLIENTE], [NOMBRE_ART], [NOMBRE_EMPLEADOR], [RELATO_HECHOS] reemplazados:
+
+<strong><u>PARTE ACTORA RELATA HECHOS- OFRECE PRUEBA MEDICA- SOLICITA INAPLICABILIDAD DE BAREMO 549/2025- SOLICITA SE DESIGNE AUDIENCIA MEDICA.-</u></strong>
+
+<p>Senor Superintendente:</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;ARRECHEA LEANDRO T 129 F 33 / CASI T LII F 52 en mi caracter de letrado patrocinante de la parte actora en las presentes actuaciones, en virtud del decreto 5/2026 vengo por el presente a ofrecer prueba; solicitando se tenga por presentada y se de integro cumplimiento al Art 1 bis, inciso a, de la Ley 19.549, el cual establece el principio de la tutela administrativa efectiva, el cual debe primar en todo proceso administrativo.</p>
+<p>En virtud de esta disposicion, corresponde reconocer y garantizar al Sr [NOMBRE_CLIENTE] los derechos fundamentales de un debido proceso adjetivo en el marco de los procedimientos administrativos, tales como:</p>
+<p style="margin:6px 0 6px 20px">1.- El derecho a ser oido por parte de la autoridad administrativa competente.</p>
+<p style="margin:6px 0 6px 20px">2.- El derecho a ofrecer y producir prueba que acredite los hechos que sustentan la solicitud (y que la misma se produzca en busqueda de la verdad material). -</p>
+<p style="margin:6px 0 6px 20px">3.- El derecho a recibir una decision fundada en un plazo razonable, conforme al principio de razonabilidad y celeridad en la tramitacion de los procedimientos administrativos. En este contexto, se pretende que se reconozcan y garanticen estos derechos procesales del trabajador, con el fin de que se resuelva el presente reclamo conforme a derecho y dentro de los plazos establecidos, en virtud de la legislacion vigente, en especial la Ley 24.557.</p>
+
+<p><strong><u>II.- HECHOS:</u></strong></p>
+<p>[RELATO_HECHOS]</p>
+
+<p><strong><u>III.- OFRECE PRUEBA.-</u></strong></p>
+<p>En cumplimiento con la Res. SRT 5/2026 ofrezco la siguiente prueba:</p>
+<p><strong><u>III. A) OFRECE PRUEBA PERICIAL MEDICA. SE OPONE A LOS RESULTADOS DE ESTUDIOS MEDICOS INCORPORADOS POR LA ART - SOLICITA SE DESIGNE AUDIENCIA MEDICA - SOLICITA REVISION MEDICA INTEGRAL.-</u></strong></p>
+<p>Desde ya, esta parte se opone expresamente a los resultados de los estudios medicos aportados por la aseguradora [NOMBRE_ART] En tanto los mismos no reflejan adecuadamente la gravedad de las lesiones sufridas por el trabajador ni el real estado de su salud actual. Resulta llamativo que, pese a la entidad de los hechos denunciados y la multiplicidad de lesiones documentadas en la historia clinica, los informes presentados por la ART minimicen e incluso omitan consideraciones fundamentales sobre el estado fisico del Sr [NOMBRE_CLIENTE] Por ello, se impugnan formalmente dichos informes, y se solicita la produccion de una nueva revision medica imparcial que garantice la debida tutela administrativa conforme a la Ley 19.549.</p>
+<p>Solicito que la misma sea llevada a cabo por profesional medico especializado en medicina del trabajo, medicina legal o la especialidad que se estime pertinente, facultado para realizar los examenes, estudios clinicos y complementarios necesarios.</p>
+<p>El medico legista debera:</p>
+<p style="margin:6px 0 6px 20px">1.- Determinar si las lesiones descriptas por el trabajador y sus secuelas guardan relacion causal directa con el hecho denunciado, conforme los antecedentes asistenciales, estudios medicos e historia clinica obrantes en el expediente.</p>
+<p style="margin:6px 0 6px 20px">2.- Describir tecnicamente cada una de las lesiones padecidas por el trabajador, conforme diagnostico clinico, imagenes, practicas medicas realizadas y evolucion registrada en su historia clinica.</p>
+<p style="margin:6px 0 6px 20px">3.- Determinar el grado de incapacidad que presenta el trabajador como consecuencia de las siguientes lesiones y afecciones:</p>
+<p style="margin:6px 0 6px 20px">4.- Determinar la existencia de factores de ponderacion, conforme Decreto 659/96, evaluando edad, tareas habituales, impacto en la vida cotidiana, entre otros criterios relevantes.</p>
+<p style="margin:6px 0 6px 20px">5.- Informar si el trabajador presenta, a la fecha, algun grado de incapacidad laborativa permanente, y en su caso, el porcentaje correspondiente conforme Baremo Decreto 659/96.-</p>
+<p style="margin:6px 0 6px 20px">6.- Determinar si el cuadro clinico se encuentra consolidado y si ha finalizado el periodo de rehabilitacion, o si por el contrario requiere nuevas prestaciones medicas o tratamientos complementarios, conforme lo previsto en la Ley 24.557.</p>
+<p style="margin:6px 0 6px 20px">7.- Indicar si, a raiz de las secuelas fisicas y funcionales que presenta el trabajador, resulta aconsejable o necesaria su recalificacion profesional o reubicacion laboral, considerando la imposibilidad o restriccion para desempenar las tareas que desarrollaba al momento del accidente para el empleador [NOMBRE_EMPLEADOR]. A tales efectos, el medico interviniente en la junta medica otorgada por la SRT, debera valorar la aptitud laboral residual del trabajador y la razonabilidad de continuar en su puesto habitual sin comprometer su salud.</p>
+<p>Pido se tenga presente lo manifestado a sus efectos en cuanto a las oposiciones efectuadas y, en consecuencia, se produzca la prueba ofrecida precedentemente (prueba pericial medica y psicologica).</p>
+
+<p><strong><u>III.B.- SOLICITA INAPLICABILIDAD DECRETO 549/2025. SOLICITA APLICABILIDAD DECRETO 659/96.</u></strong></p>
+<p><strong>a).- Solicita aplicacion del Baremo vigente al momento del siniestro -</strong></p>
+<p>El articulo 3 del Decreto 549/2025 dispone: La Tabla de Evaluacion de Incapacidades Laborales entrara en vigencia a los ciento ochenta dias corridos desde su publicacion en el Boletin Oficial, y resultara de aplicacion a toda valoracion o determinacion de incapacidad laboral que no haya sido aun dictada, independientemente de la instancia en que se encuentre.</p>
+<p>La norma transcripta resulta manifiestamente inconstitucional en cuanto pretende imponer la aplicacion del nuevo baremo a contingencias anteriores a su dictado y a procesos en tramite, alterando situaciones juridicas constituidas y creditos indemnizatorios consolidados, violentando de tal modo el derecho de propiedad y a la reparacion integral de indudable raigambre constitucional.-</p>
+<p>En consecuencia, corresponde declarar su inconstitucionalidad y la inaplicabilidad del nuevo baremo introducido por el Decreto 549/2025, debiendo aplicarse la Tabla de Evaluacion de Incapacidades Laborales aprobada por el Decreto 659/1996, vigente al momento del infortunio.</p>
+<p>Asi lo establece el articulo 2 de la Ley 26.773: El derecho a la reparacion dineraria se computara desde que acaecio el evento danoso. El articulo 7 del Codigo Civil y Comercial establece que las leyes no tienen efecto retroactivo y que la retroactividad no puede afectar derechos amparados por garantias constitucionales.</p>
+<p>El Decreto 549/2025 deviene inconstitucional: vulnera el derecho de propiedad (art. 17 CN), el principio de reparacion integral (arts. 14 bis y 19 CN), los tratados internacionales (art. 75 inc. 22 CN), y configura un exceso reglamentario vedado por el art. 99 inc. 2 CN.-</p>
+<p>Por todo lo expuesto, corresponde declarar la inconstitucionalidad del articulo 3 del Decreto 549/2025 y ordenar la aplicacion de la Tabla de Evaluacion de Incapacidades Laborales aprobada por el Decreto 659/1996.</p>
+
+<p><strong>b.- Solicita SE DESIGNE AUDIENCIA MEDICA - <u>Inconstitucionalidad manifiesta de la dispensa del examen medico presencial y de la realizacion de nuevos estudios medicos. Vaciamiento del procedimiento de divergencia y lesion directa a garantias constitucionales.-</u></strong></p>
+<p>El Decreto 549/2025 incorpora una prevision de extrema gravedad institucional al permitir que el examen fisico no se considere requisito indispensable para la valoracion del dano. Dicha clausula configura una alteracion sustancial, regresiva y arbitraria del regimen de determinacion de la incapacidad laboral.-</p>
+<p><strong>b.1. Supresion del nucleo esencial del procedimiento de divergencia en la determinacion de la incapacidad.-</strong></p>
+<p>El procedimiento por divergencia fue instituido como instancia de control real y efectivo frente a la evaluacion inicial de la ART. Un procedimiento de divergencia que se decide sin volver a examinar al trabajador no es divergencia: es una mera ratificacion administrativa del dictamen de la ART, revestida de una apariencia de legalidad que encubre su absoluta vacuidad tecnica.-</p>
+<p><strong>b.2. Conversion del tramite administrativo en una barrera artificial y dilatoria al acceso a la jurisdiccion.-</strong></p>
+<p>Se obliga al damnificado a transitar una instancia sin produccion probatoria propia, sin revision medica independiente, fundada exclusivamente en documentacion aportada por la ART, parte economicamente interesada, para luego exigirle el agotamiento de dicho tramite como condicion de procedibilidad judicial. Este esquema lesiona el derecho a la tutela judicial efectiva consagrado por la Constitucion Nacional.-</p>
+<p><strong>b.3. Violacion palmaria del derecho de defensa y del debido proceso.-</strong></p>
+<p>El examen medico presencial es el acto central e insustituible de la determinacion de la incapacidad. Prescindir de el importa negar al trabajador la constatacion directa de sus secuelas, configurando una violacion del derecho de defensa (art. 18 CN) y del debido proceso.-</p>
+<p><strong>b.4. Desconocimiento del caracter evolutivo del dano y regresion en la proteccion del trabajador.-</strong></p>
+<p>Las secuelas incapacitantes no son realidades estaticas sino procesos evolutivos que pueden agravarse con el tiempo. Eliminar el examen medico actualizado importa una regresion vedada por el principio de progresividad. El art. 14 bis CN impone garantizar condiciones de proteccion efectivas.-</p>
+<p><strong>b.5. Exceso reglamentario grosero y ejercicio ilegitimo de facultades legislativas.-</strong></p>
+<p>Ni la Ley 24.557 ni la Ley 26.773 autorizan al Poder Ejecutivo a suprimir un elemento esencial del procedimiento de determinacion de la incapacidad. El Decreto 549/2025 reconfigura el procedimiento, lo vacia de contenido y lo convierte en una ficcion administrativa, en violacion del art. 99 inc. 2 CN.-</p>
+<p>En consecuencia, debe ordenarse que el presente reclamo sea resuelto mediante una evaluacion medica presencial, integral, actualizada e independiente, como condicion indispensable de validez constitucional del procedimiento.-</p>
+
+<p><strong><u>IV.- DIFERENCIA ENTRE LESION Y AFECCION. LIMITES DE LA OBLIGACION DE DENUNCIA.-</u></strong></p>
+<p>Es necesario efectuar una distincion precisa entre los conceptos de lesion y afeccion. La lesion hace referencia al dano fisico concreto e inmediato. La afeccion comprende todas aquellas consecuencias organicas, funcionales o psicologicas que se desarrollan con posterioridad a la lesion original.</p>
+<p>No corresponde exigir que el trabajador haya denunciado individualmente todas las afecciones secundarias derivadas del accidente inicial, dado que la legislacion vigente no impone tal obligacion. La Ley 24.557 y su Decreto Reglamentario 717/96 solo imponen denunciar el accidente o enfermedad sufrida.</p>
+<p>La jurisprudencia ha sido categorica: solo se impone la obligacion de denunciar las contingencias sufridas, y no las afecciones que aquellas provocan (Cfr. Indartt, Sebastian Gabriel c/ A.R.T. Interaccion S.A. s/ Accidente Ley Especial - Expte. N 8126/2016/CA1 - Juzgado N 58 - Sala I, C.N.A.T.).</p>
+<p>Por lo tanto, corresponde a la ART y a la Comision Medica realizar la valoracion integral y de oficio de todo el cuadro clinico.</p>
+
+<p><strong><u>V.- PERICIAL PSICOLOGICA.</u></strong></p>
+<p>Ante lo traumatico del accidente sufrido y la dificultad para realizar acciones cotidianas, el actor padece importantes secuelas psiquicas. Atento ello, solicito se designe perito psicologo, para que conteste los siguientes puntos de pericia:</p>
+<p style="margin:6px 0 6px 20px">1.- La realizacion de un estudio psicodiagnostico exhaustivo, que incluya entrevistas clinicas, test proyectivos, escalas estandarizadas y cualquier otro recurso profesional pertinente.</p>
+<p style="margin:6px 0 6px 20px">2.- Informe si existe una relacion causal entre el hecho denunciado y los sintomas emocionales: estres postraumatico, angustia, dificultad para reintegrarse a su vida social y laboral.</p>
+<p style="margin:6px 0 6px 20px">3.- Determine y cuantifique el grado de incapacidad psicofisica conforme Baremo aprobado por Decreto 659/96.</p>
+<p style="margin:6px 0 6px 20px">4.- Determine si, al dia de la fecha, el trabajador requiere tratamiento psiquiatrico, en concordancia con la indicacion medica que surge de la historia clinica confeccionada oportunamente por los profesionales de la [NOMBRE_ART]</p>
+
+<p><strong><u>VI.- PRINCIPIO PROTECTORIO - EL TRABAJADOR COMO SUJETO DE PREFERENTE TUTELA CONSTITUCIONAL</u></strong></p>
+<p>La aplicacion de una reglamentacion vigente al momento del inicio del tramite ante la Superintendencia de Riesgos del Trabajo, en desmedro de la normativa vigente al momento del acaecimiento del infortunio laboral, resulta manifiestamente improcedente y violatoria del orden constitucional.</p>
+<p>Conforme el regimen instaurado por la Ley 24.557 y sus modificatorias, los derechos del trabajador nacen y se incorporan a su patrimonio juridico al momento del hecho generador, no pudiendo ser posteriormente alterados por disposiciones reglamentarias sin vulnerar el principio de irretroactividad consagrado en el art. 7 del Codigo Civil y Comercial de la Nacion, asi como las garantias de legalidad, seguridad juridica y propiedad reconocidas por los arts. 17, 18 y 19 de la Constitucion Nacional.</p>
+<p>La Corte Suprema ha sido categorica: las normas no pueden aplicarse retroactivamente cuando afectan derechos ya consolidados (CSJN, Esposito, Miguel Angel c/ Provincia ART S.A., Fallos: 339:781).</p>
+<p>El principio protectorio (art. 14 bis CN) y el principio pro homine (CSJN, Madorran c/ Administracion Nacional de Aduanas) imponen la interpretacion mas favorable al trabajador.</p>
+<p>La Corte Interamericana de Derechos Humanos ha destacado que los Estados deben remover los obstaculos que impidan el acceso real y efectivo a la justicia en materia de derechos laborales.</p>
+<p>La Sala VII CNAT en Herrera c/ Prevencion ART ratifico que el trabajador es sujeto de preferente tutela constitucional, conforme lo senalado por la Corte Suprema en el fallo Vizzoti, Carlos A. c/ AMSA S.A.</p>
+<p>En consecuencia, la aplicacion retroactiva de reglamentaciones emanadas de la SRT deviene inconstitucional, en tanto importa una restriccion ilegitima de derechos adquiridos, vulnera el principio protectorio y el principio pro homine, y frustra el acceso del trabajador a una revision judicial amplia y efectiva.</p>
+
+<p><strong><u>VII.- PETITORIO.</u></strong></p>
+<p>En atencion a las consideraciones de hecho y de derecho expuestas a lo largo del presente y en cumplimiento con las disposiciones legales vigentes, solicitamos que:</p>
+<p style="margin:6px 0 6px 20px">a.- Se tengan presentes todas y cada una de las lesiones psicofisicas padecidas por el trabajador expuestas en el presente escrito.</p>
+<p style="margin:6px 0 6px 20px">b.- Se lleve a cabo una pericia medica y psicologica que contemple exhaustivamente todas las lesiones y secuelas que el trabajador padece, y se determine con precision el grado de incapacidad que le corresponde conforme al Baremo de Incapacidades en vigor.</p>
+<p style="margin:6px 0 6px 20px">c.- Se evalue la posibilidad de recalificacion de las tareas del trabajador, teniendo en cuenta las secuelas derivadas del accidente, a fin de garantizar que su desempeno laboral no comprometa su salud fisica ni psiquica.</p>
+<p style="margin:6px 0 6px 20px">d.- Se reconozca y respete el derecho del trabajador a ser escuchado, a ofrecer y producir prueba, y a recibir una decision fundada dentro de un plazo razonable, conforme a lo estipulado por el articulo 1 bis, inciso a de la Ley 19.549.</p>
+<p style="margin:6px 0 6px 20px">e.- Se otorgue al trabajador el tratamiento y las prestaciones en especie establecidas por la Ley 24.557, y que se asegure la reparacion integral de los danos sufridos, en concordancia con la normativa aplicable.-</p>
+<p>Por lo expuesto, solicito que se tenga por presentado este escrito y se de curso a las peticiones realizadas, conforme a derecho.-</p>
+<br>
+<p style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Proveer de conformidad,</p>
+<p style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;SERA JUSTICIA.-</p>`;
+
+PARTE ACTORA RELATA HECHOS- OFRECE PRUEBA MEDICA- SOLICITA INAPLICABILIDAD DE BAREMO 549/2025- SOLICITA SE DESIGNE AUDIENCIA MEDICA.-
+
+Senor Superintendente:
+	ARRECHEA LEANDRO T 129 F 33 / CASI T LII F 52 en mi caracter de letrado patrocinante de la parte actora en las presentes actuaciones, en virtud del decreto 5/2026 vengo por el presente a ofrecer prueba; solicitando se tenga por presentada y se de integro cumplimiento al Art 1 bis, inciso a, de la Ley 19.549, el cual establece el principio de la tutela administrativa efectiva, el cual debe primar en todo proceso administrativo.
+En virtud de esta disposicion, corresponde reconocer y garantizar al Sr [NOMBRE_CLIENTE] los derechos fundamentales de un debido proceso adjetivo en el marco de los procedimientos administrativos, tales como:
+	1.- El derecho a ser oido por parte de la autoridad administrativa competente.
+	2.- El derecho a ofrecer y producir prueba que acredite los hechos que sustentan la solicitud (y que la misma se produzca en busqueda de la verdad material). -
+	3.- El derecho a recibir una decision fundada en un plazo razonable, conforme al principio de razonabilidad y celeridad en la tramitacion de los procedimientos administrativos. En este contexto, se pretende que se reconozcan y garanticen estos derechos procesales del trabajador, con el fin de que se resuelva el presente reclamo conforme a derecho y dentro de los plazos establecidos, en virtud de la legislacion vigente, en especial la Ley 24.557.
+
+	II.- HECHOS:
+[RELATO_HECHOS]
+
+	III.- OFRECE PRUEBA.-
+En cumplimiento con la Res. SRT 5/2026 ofrezco la siguiente prueba:
+	III. A) OFRECE PRUEBA PERICIAL MEDICA. SE OPONE A LOS RESULTADOS DE ESTUDIOS MEDICOS INCORPORADOS POR LA ART  - SOLICITA SE DESIGNE AUDIENCIA MEDICA - SOLICITA REVISION MEDICA INTEGRAL.-
+Desde ya, esta parte se opone expresamente a los resultados de los estudios medicos aportados por la aseguradora [NOMBRE_ART] En tanto los mismos no reflejan adecuadamente la gravedad de las lesiones sufridas por el trabajador ni el real estado de su salud actual. Resulta llamativo que, pese a la entidad de los hechos denunciados y la multiplicidad de lesiones documentadas en la historia clinica, los informes presentados por la ART minimicen e incluso omitan consideraciones fundamentales sobre el estado fisico del Sr [NOMBRE_CLIENTE] Por ello, se impugnan formalmente dichos informes, y se solicita la produccion de una nueva revision medica imparcial que garantice la debida tutela administrativa conforme a la Ley 19.549.
+Solicito que la misma sea llevada a cabo por profesional medico especializado en medicina del trabajo, medicina legal o la especialidad que se estime pertinente, facultado para realizar los examenes, estudios clinicos y complementarios necesarios.
+El medico legista debera:
+1.- Determinar si las lesiones descriptas por el trabajador y sus secuelas guardan relacion causal directa con el hecho denunciado, conforme los antecedentes asistenciales, estudios medicos e historia clinica obrantes en el expediente.
+2.- Describir tecnicamente cada una de las lesiones padecidas por el trabajador, conforme diagnostico clinico, imagenes, practicas medicas realizadas y evolucion registrada en su historia clinica.
+3.- Determinar el grado de incapacidad que presenta el trabajador como consecuencia de las siguientes lesiones y afecciones:
+4.- Determinar la existencia de factores de ponderacion, conforme Decreto 659/96, evaluando edad, tareas habituales, impacto en la vida cotidiana, entre otros criterios relevantes.
+	5.- Informar si el trabajador presenta, a la fecha, algun grado de incapacidad laborativa permanente, y en su caso, el porcentaje correspondiente conforme Baremo Decreto 659/96.-
+	6.- Determinar si el cuadro clinico se encuentra consolidado y si ha finalizado el periodo de rehabilitacion, o si por el contrario requiere nuevas prestaciones medicas o tratamientos complementarios, conforme lo previsto en la Ley 24.557.
+	7.- Indicar si, a raiz de las secuelas fisicas y funcionales que presenta el trabajador, resulta aconsejable o necesaria su recalificacion profesional o reubicacion laboral, considerando la imposibilidad o restriccion para desempenar las tareas que desarrollaba al momento del accidente para el empleador [NOMBRE_EMPLEADOR]. A tales efectos, el medico interviniente en la junta medica otorgada por la SRT, debera valorar la aptitud laboral residual del trabajador y la razonabilidad de continuar en su puesto habitual sin comprometer su salud.
+Pido se tenga presente lo manifestado a sus efectos en cuanto a las oposiciones efectuadas y, en consecuencia, se produzca la prueba ofrecida precedentemente (prueba pericial medica y psicologica).
+
+III.B.- SOLICITA INAPLICABILIDAD DECRETO 549/2025. SOLICITA APLICABILIDAD DECRETO 659/96.
+a).- Solicita aplicacion del Baremo vigente al momento del siniestro -
+El articulo 3 del Decreto 549/2025 dispone: La Tabla de Evaluacion de Incapacidades Laborales, sustituida por el articulo 1 del presente decreto, entrara en vigencia a los ciento ochenta dias corridos, contados desde su publicacion en el Boletin Oficial, y a partir de esa fecha resultara de aplicacion a toda valoracion o determinacion de incapacidad laboral que no haya sido aun dictada, independientemente de la instancia administrativa o judicial en la que se encuentre.
+La norma transcripta resulta manifiestamente inconstitucional en cuanto pretende imponer la aplicacion del nuevo baremo a contingencias anteriores a su dictado y a procesos en tramite, alterando situaciones juridicas constituidas y creditos indemnizatorios consolidados, violentando de tal modo el derecho de propiedad y a la reparacion integral de indudable raigambre constitucional.-
+En consecuencia, corresponde declarar su inconstitucionalidad y, por ende, la inaplicabilidad del nuevo baremo introducido por el Decreto 549/2025 al caso de autos, debiendo aplicarse la Tabla de Evaluacion de Incapacidades Laborales aprobada por el Decreto 659/1996, vigente al momento del infortunio.
+En primer termino, es evidente que corresponde aplicar el baremo vigente al momento del accidente o primera manifestacion invalidante, pues es en ese instante cuando nace el deber de reparar en cabeza de la Aseguradora de Riesgos del Trabajo y, correlativamente, el credito indemnizatorio en favor del trabajador.
+Asi lo establece el articulo 2 de la Ley 26.773 al disponer que: El derecho a la reparacion dineraria se computara, mas alla del momento en que se determine su procedencia y alcance, desde que acaecio el evento danoso o se determino la relacion causal adecuada de la enfermedad profesional.
+La disposicion es clara: el derecho surge con el hecho danoso y no con la sentencia ni con la determinacion judicial o administrativa de incapacidad. Por consiguiente, las reglas que inciden en la cuantificacion del dano deben ser las vigentes al momento en que el credito se incorpora al patrimonio del trabajador.-
+En este sentido, el articulo 7 del Codigo Civil y Comercial de la Nacion establece: A partir de su entrada en vigencia, las leyes se aplican a las consecuencias de las relaciones y situaciones juridicas existentes. Las leyes no tienen efecto retroactivo, sean o no de orden publico, excepto disposicion en contrario. La retroactividad establecida por la ley no puede afectar derechos amparados por garantias constitucionales.
+A la luz de esta norma, el nuevo baremo no puede aplicarse a contingencias anteriores a su dictado. El derecho indemnizatorio constituye un derecho consolidado desde el momento del accidente. Desde entonces nace la obligacion resarcitoria y el credito integra el patrimonio del trabajador.-
+Debe destacarse que el baremo no constituye una mera norma procesal, sino un elemento sustancial que incide directamente en la determinacion del porcentaje de incapacidad y, por ende, en el monto de la prestacion dineraria. Su modificacion impacta en la esencia misma del derecho indemnizatorio. Aplicarlo a hechos anteriores importaria alterar la medida del derecho ya nacido, vulnerando la seguridad juridica y el derecho de propiedad y a una reparacion integral de la actora.
+El articulo 8 inciso 3 de la Ley 24.557 establece que el grado de incapacidad laboral permanente sera determinado por las Comisiones Medicas en base a la tabla de evaluacion de las incapacidades laborales, que elaborara el Poder Ejecutivo Nacional. La norma confiere al Poder Ejecutivo una facultad tecnica y reglamentaria. Sin embargo, dicha habilitacion en modo alguno lo autoriza a regular el ambito temporal de aplicacion de esa tabla.
+El articulo 99 inciso 2 de la Constitucion Nacional dispone que el Presidente expide las instrucciones y reglamentos necesarios para la ejecucion de las leyes, cuidando de no alterar su espiritu con excepciones reglamentarias. Esta clausula fija un limite claro: el reglamento no puede modificar el alcance sustancial de la ley que reglamenta.
+El Decreto 549/2025 introduce una regla de derecho transitorio que excede el ambito tecnico de elaboracion de la tabla y se proyecta sobre el regimen sustancial de responsabilidad. El Poder Ejecutivo no solo elaboro una nueva tabla sino que pretende imponer su aplicacion a situaciones juridicas nacidas bajo un regimen anterior. Esa decision no es meramente reglamentaria: es sustancialmente legislativa.-
+En sintesis, el articulo 3 del Decreto 549/2025 deviene inconstitucional: en primer lugar, por su caracter retroactivo y lesivo del derecho de propiedad (art. 17 CN), del principio de reparacion integral (arts. 14 bis y 19 CN) y de los tratados internacionales (art. 75 inc. 22 CN). En segundo lugar, por exceso reglamentario vedado por el art. 99 inc. 2 CN.-
+Por todo lo expuesto, corresponde declarar la inconstitucionalidad del articulo 3 del Decreto 549/2025 y ordenar la aplicacion de la Tabla de Evaluacion de Incapacidades Laborales aprobada por el Decreto 659/1996.
+
+b.- Solicita SE DESIGNE AUDIENCIA MEDICA - Inconstitucionalidad manifiesta de la dispensa del examen medico presencial y de la realizacion de nuevos estudios medicos.-
+El Decreto 549/2025 incorpora una prevision de extrema gravedad institucional al establecer que en situaciones donde el examen fisico no sea necesario, la decision de realizarlo quedara a criterio del evaluador, no considerandose requisito indispensable para la valoracion del dano.
+Dicha clausula configura una alteracion sustancial, regresiva y arbitraria del regimen de determinacion de la incapacidad laboral, que torna inconstitucional su aplicacion al caso de autos.-
+b.1. Supresion del nucleo esencial del procedimiento de divergencia en la determinacion de la incapacidad.-
+El procedimiento por divergencia fue instituido como instancia de control real y efectivo frente a la evaluacion inicial de la ART. Autorizar que se resuelva sin examen medico presencial implica convalidar acriticamente la evaluacion de la aseguradora, privando al trabajador de toda posibilidad real de revision. Un procedimiento de divergencia que se decide sin volver a examinar al trabajador no es divergencia: es una mera ratificacion administrativa del dictamen de la ART.-
+b.2. Conversion del tramite administrativo en una barrera artificial y dilatoria al acceso a la jurisdiccion.-
+Se obliga al damnificado a transitar una instancia sin produccion probatoria propia, sin revision medica independiente, fundada exclusivamente en documentacion aportada por la ART, parte economicamente interesada, para luego exigirle el agotamiento de dicho tramite como condicion de procedibilidad judicial. Este esquema lesiona el derecho a la tutela judicial efectiva consagrado por la Constitucion Nacional.-
+b.3. Violacion palmaria del derecho de defensa y del debido proceso.-
+El examen medico presencial es el acto central e insustituible de la determinacion de la incapacidad. Prescindir de el importa negar al trabajador la constatacion directa de sus secuelas, configurando una violacion del derecho de defensa (art. 18 CN) y del debido proceso.-
+b.4. Desconocimiento del caracter evolutivo del dano y regresion en la proteccion del trabajador.-
+Las secuelas incapacitantes no son realidades estaticas sino procesos evolutivos que pueden agravarse con el tiempo. Eliminar el examen medico actualizado importa una regresion vedada por el principio de progresividad. El art. 14 bis CN impone garantizar condiciones de proteccion efectivas.-
+b.5. Exceso reglamentario grosero y ejercicio ilegitimo de facultades legislativas.-
+Ni la Ley 24.557 ni la Ley 26.773 autorizan al Poder Ejecutivo a suprimir un elemento esencial del procedimiento de determinacion de la incapacidad. El Decreto 549/2025 reconfigura el procedimiento, lo vacia de contenido y lo convierte en una ficcion administrativa, en violacion del art. 99 inc. 2 CN.-
+En consecuencia, debe ordenarse que el presente reclamo sea resuelto mediante una evaluacion medica presencial, integral, actualizada e independiente, con realizacion de los estudios complementarios necesarios, como condicion indispensable de validez constitucional del procedimiento.-
+
+	IV.- DIFERENCIA ENTRE LESION Y AFECCION. LIMITES DE LA OBLIGACION DE DENUNCIA.-
+Es necesario efectuar una distincion precisa entre los conceptos de lesion y afeccion. La lesion hace referencia al dano fisico concreto e inmediato que resulta del hecho danoso. La afeccion comprende todas aquellas consecuencias organicas, funcionales o psicologicas que se desarrollan con posterioridad a la lesion original, por mecanismos compensatorios o adaptativos.
+En este contexto, no corresponde exigir que el trabajador haya denunciado individualmente todas las afecciones secundarias derivadas del accidente inicial, dado que la legislacion vigente no impone tal obligacion. La Ley 24.557 y su Decreto Reglamentario 717/96 establecen que la denuncia debe circunscribirse al accidente o enfermedad sufrida, y no requiere la individualizacion de las afecciones posteriores.
+La jurisprudencia ha sido categorica: Con relacion a la alegada falta de denuncia, tanto la ley 24.557 como su decreto reglamentario 717/96, solo imponen la obligacion de denunciar las contingencias sufridas por el trabajador, y no las afecciones que aquellas provocan (Cfr. Indartt, Sebastian Gabriel c/ A.R.T. Interaccion S.A. s/ Accidente Ley Especial - Expte. N 8126/2016/CA1 - Juzgado N 58 - Sala I, C.N.A.T.).
+Por lo tanto, resulta improcedente exigir al trabajador que haya denunciado de manera autonoma cada una de las afecciones que se manifestaron con posterioridad. Corresponde a la ART y a la Comision Medica realizar la valoracion integral y de oficio de todo el cuadro clinico.
+
+	V.- PERICIAL PSICOLOGICA.
+Ante lo traumatico del accidente sufrido y la dificultad para realizar acciones cotidianas, el actor padece importantes secuelas psiquicas que se manifiestan como episodios de frustracion. Atento ello, solicito se designe perito psicologo, para que conteste los siguientes puntos de pericia:
+	1.- La realizacion de un estudio psicodiagnostico exhaustivo, que incluya entrevistas clinicas, test proyectivos, escalas estandarizadas y cualquier otro recurso profesional pertinente, con el objeto de valorar de manera objetiva y actual el estado psiquico del trabajador.
+	2.- Informe si existe una relacion causal entre el hecho denunciado y los sintomas emocionales que presenta el trabajador, tales como: estres postraumatico, angustia, dificultad para reintegrarse a su vida social y laboral, entre otros.
+	3.- Determine y cuantifique el grado de incapacidad psicofisica que el trabajador padece como consecuencia de las secuelas emocionales del hecho traumatico sufrido, aplicando los parametros del Baremo aprobado por Decreto 659/96.
+	4.- Determine si, al dia de la fecha, el trabajador requiere tratamiento psiquiatrico, en concordancia con la indicacion medica que surge de la historia clinica confeccionada oportunamente por los profesionales de la [NOMBRE_ART]
+
+VI.- PRINCIPIO PROTECTORIO - EL TRABAJADOR COMO SUJETO DE PREFERENTE TUTELA CONSTITUCIONAL
+La aplicacion de una reglamentacion vigente al momento del inicio del tramite ante la Superintendencia de Riesgos del Trabajo, en desmedro de la normativa vigente al momento del acaecimiento del infortunio laboral, resulta manifiestamente improcedente y violatoria del orden constitucional.
+Conforme el regimen instaurado por la Ley 24.557 y sus modificatorias, los derechos del trabajador nacen y se incorporan a su patrimonio juridico al momento del hecho generador, no pudiendo ser posteriormente alterados por disposiciones reglamentarias sin vulnerar el principio de irretroactividad consagrado en el art. 7 del Codigo Civil y Comercial de la Nacion, asi como las garantias de legalidad, seguridad juridica y propiedad reconocidas por los arts. 17, 18 y 19 de la Constitucion Nacional.
+La Corte Suprema de Justicia de la Nacion ha sido categorica al sostener que las normas no pueden aplicarse retroactivamente cuando afectan derechos ya consolidados (CSJN, Esposito, Miguel Angel c/ Provincia ART S.A., Fallos: 339:781).
+A ello se suma el respeto irrestricto del principio protectorio, piedra angular del Derecho del Trabajo. Dicho principio encuentra consagracion expresa en el art. 14 bis de la Constitucion Nacional y ha sido reforzado por los instrumentos internacionales de derechos humanos con jerarquia constitucional (art. 75 inc. 22 CN).
+La Corte Suprema, en el precedente Madorran, Marta A. c/ Administracion Nacional de Aduanas, incorporo al Derecho del Trabajo el principio pro homine, estableciendo que el interprete debe optar por aquella interpretacion que proteja en mayor medida a la persona humana.
+La Corte Interamericana de Derechos Humanos, en su Opinion Consultiva sobre Acceso a la justicia como garantia de los derechos economicos, sociales y culturales, ha destacado que los Estados deben remover los obstaculos normativos o procedimentales que impidan el acceso real y efectivo a la justicia en materia de derechos laborales.
+La Sala VII de la Camara Nacional de Apelaciones del Trabajo, en autos Herrera, Angel Gustavo c/ Prevencion ART S.A. s/ Accidente - Ley Especial, ratifico que el trabajador debe ser considerado sujeto de preferente tutela constitucional, conforme lo senalado por la Corte Suprema en el fallo Vizzoti, Carlos A. c/ AMSA S.A.
+En consecuencia, la aplicacion retroactiva de reglamentaciones emanadas de la SRT deviene inconstitucional, en tanto importa una restriccion ilegitima de derechos adquiridos, vulnera el principio protectorio y el principio pro homine, y frustra el acceso del trabajador a una revision judicial amplia y efectiva.
+
+VII.- PETITORIO.
+En atencion a las consideraciones de hecho y de derecho expuestas a lo largo del presente y en cumplimiento con las disposiciones legales vigentes, solicitamos que:
+a.- Se tengan presentes todas y cada una de las lesiones psicofisicas padecidas por el trabajador expuestas en el presente escrito.
+b.- Se lleve a cabo una pericia medica y psicologica que contemple exhaustivamente todas las lesiones y secuelas que el trabajador padece, y se determine con precision el grado de incapacidad que le corresponde conforme al Baremo de Incapacidades en vigor.
+c.- Se evalue la posibilidad de recalificacion de las tareas del trabajador, teniendo en cuenta las secuelas derivadas del accidente, a fin de garantizar que su desempeno laboral no comprometa su salud fisica ni psiquica.
+d.- Se reconozca y respete el derecho del trabajador a ser escuchado, a ofrecer y producir prueba, y a recibir una decision fundada dentro de un plazo razonable, conforme a lo estipulado por el articulo 1 bis, inciso a de la Ley 19.549.
+e.- Se otorgue al trabajador el tratamiento y las prestaciones en especie establecidas por la Ley 24.557, y que se asegure la reparacion integral de los danos sufridos, en concordancia con la normativa aplicable.-
+Por lo expuesto, solicito que se tenga por presentado este escrito y se de curso a las peticiones realizadas, conforme a derecho.-
+
+		Proveer de conformidad,
+	SERA JUSTICIA.-`;
+
+  const prompt="Genera el escrito reemplazando SOLO:\n[NOMBRE_CLIENTE]: "+cliente+"\n[NOMBRE_ART]: "+art+"\n[NOMBRE_EMPLEADOR]: "+(empleador||"[EMPLEADOR]")+"\n[RELATO_HECHOS]: "+(hechos||"Accidente de trabajo ocurrido el "+fechaFmt+".");
+  try{
+    const raw=await callAPI(sysE,[{role:"user",content:prompt}],4000);
+    document.getElementById("escrito-content").innerHTML=raw;
+  }catch(err){document.getElementById("escrito-content").innerHTML="Error: "+err.message;}
+  document.getElementById("escrito-loading").style.display="none";
+  document.getElementById("btn-generar-escrito").disabled=false;
+}
+function imprimirEscrito(){
+  const c=document.getElementById("escrito-content").innerHTML;
+  if(!c){alert("Primero genera el escrito.");return;}
+  const w=window.open("","_blank");
+  w.document.write("<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><title>Escrito</title><style>body{font-family:Arial,sans-serif;font-size:12px;line-height:1.8;margin:2cm 2.5cm;color:#000}p{margin:8px 0;text-align:justify}</style></head><body>"+c+"</body></html>");
+  w.document.close();w.focus();setTimeout(()=>w.print(),500);
+}
+function descargarEscrito(){
+  const c=document.getElementById("escrito-content").innerText;
+  if(!c){alert("Primero genera el escrito.");return;}
+  const nombre=gv("e_cliente").replace(/\s+/g,"_")||"escrito";
+  const blob=new Blob([c],{type:"text/plain;charset=utf-8"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+  a.download="Escrito_"+nombre+".txt";a.click();URL.revokeObjectURL(a.href);
+}
+function appendMsg(role,text){
+  const box=document.getElementById("chat-messages");
+  const d=document.createElement("div");d.className="msg "+role;
+  d.innerHTML="<div class=\"msg-bubble\">"+text.replace(/\n/g,"<br>")+"</div>";
+  box.appendChild(d);box.scrollTop=box.scrollHeight;
+}
+function chatKeydown(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendChat()}}
+async function sendChat(){
+  const inp=document.getElementById("chat-input");
+  const msg=inp.value.trim();if(!msg)return;
+  inp.value="";appendMsg("user",msg);chatHistory.push({role:"user",content:msg});
+  const btn=document.getElementById("chat-btn");btn.disabled=true;btn.textContent="...";
+  try{
+    const raw=await callAPI(SYSTEM_CHAT,chatHistory,500);
+    const m=raw.match(/\{[\s\S]*\}/);
+    if(m){const{campo,valor}=JSON.parse(m[0]);if(campo&&valor){const e=document.getElementById(campo);if(e)e.value=valor;}appendMsg("assistant","Dato actualizado.");chatHistory.push({role:"assistant",content:"Dato actualizado."});}
+    else{appendMsg("assistant",raw);chatHistory.push({role:"assistant",content:raw});}
+  }catch(err){appendMsg("assistant","Error: "+err.message)}
+  btn.disabled=false;btn.textContent="Enviar";
+}
+function resetAll(){
+  showStep("upload");clearForm();chatHistory=[];lastPdfB64=null;
+  document.getElementById("chat-messages").innerHTML="";
+  document.getElementById("file-name").textContent="Subi el PDF del caso para comenzar";
+  document.getElementById("file-input").value="";
+  document.getElementById("reasoning-panel").style.display="none";
+  document.getElementById("tab-btn-chat").textContent="Chat IA";
+  document.getElementById("escrito-content").textContent="";
+  ["e_cliente","e_art","e_empleador","e_fecha","e_hechos"].forEach(id=>{const e=document.getElementById(id);if(e)e.value="";});
+  setAlert("","ok");
+}
+function clearForm(){
+  ["f_dest_nombre","f_dest_dom","f_dest_cp","f_dest_loc","f_dest_prov","f_rem_nombre","f_rem_dni","f_rem_fecha","f_fecha_acc","f_art","f_cuerpo"].forEach(id=>{const e=document.getElementById(id);if(e)e.value="";});
+  svf("f_dest_ramo","Aseguradora de riesgos del trabajo");svf("f_rem_dom","Lavalle 1675 Piso 7 of 8");
+  svf("f_rem_cp","1048");svf("f_rem_loc","Capital Federal");svf("f_rem_prov","C.A.B.A.");
+  document.querySelector("input[name='tipo'][value='3']").checked=true;
+}
+</script>
+</body>
+</html>

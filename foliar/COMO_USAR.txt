@@ -1,0 +1,61 @@
+===========================================================
+  AGENTE RELLENADOR - ANEXO I INCAPACIDAD (ART Argentina)
+===========================================================
+
+REQUISITOS:
+  - Python 3.9+ instalado
+  - Clave API de Anthropic (claude.ai → Account → API Keys)
+
+INSTALACIÓN (solo la primera vez):
+  pip install anthropic pypdf pdfplumber reportlab
+
+CONFIGURACIÓN DE LA API KEY:
+  Opción A - Variable de entorno (recomendada):
+    Windows (PowerShell):
+      $env:ANTHROPIC_API_KEY = "sk-ant-XXXXXXXXXX"
+
+    Windows (CMD):
+      set ANTHROPIC_API_KEY=sk-ant-XXXXXXXXXX
+
+  Opción B - Parámetro al ejecutar:
+    python form_filler_agent.py documento.pdf --api-key sk-ant-XXXXXXXXXX
+
+USO:
+  python form_filler_agent.py <tu_documento_fuente.pdf>
+
+  Ejemplo:
+    python form_filler_agent.py informe_medico.pdf
+    → Genera: anexo_i_rellenado.pdf en el Escritorio
+
+  Con nombre de salida personalizado:
+    python form_filler_agent.py informe_medico.pdf --output mi_formulario.pdf
+
+QUÉ DATOS PUEDE EXTRAER DEL DOCUMENTO FUENTE:
+  ✓ CUIL del trabajador
+  ✓ Datos del empleador (nombre, CUIT, establecimiento, localidad, provincia)
+  ✓ Datos de la ART
+  ✓ Datos del médico (matrícula, CUIT/email)
+  ✓ Fechas (denuncia, baja laboral, accidente/diagnóstico)
+  ✓ Tipo de contingencia (accidente trabajo / in itinere / enfermedad profesional)
+  ✓ Descripción del accidente o enfermedad
+  ✓ Diagnósticos y lesiones
+  ✓ Porcentaje de incapacidad
+  ✓ Región del cuerpo afectada
+  ✓ Tratamiento en curso, alta médica, incapacidad temporaria/permanente
+  ✓ Prueba médica ofrecida
+  ✓ Datos del expediente judicial
+  ✓ Nombre del trabajador y letrado patrocinante
+  ✓ Fecha del formulario
+
+ARCHIVOS GENERADOS:
+  - anexo_i_rellenado.pdf → Formulario completo listo para presentar
+  - field_values_generados.json → Registro de los valores usados (para auditoría)
+
+CÓMO FUNCIONA:
+  1. Extrae el texto de tu documento PDF fuente
+  2. Claude AI analiza el texto e identifica cada dato relevante
+  3. Mapea cada dato al campo correcto del formulario
+  4. Genera el formulario Anexo I rellenado automáticamente
+
+NOTA: El documento fuente debe tener texto seleccionable (no ser una imagen escaneada).
+===========================================================
