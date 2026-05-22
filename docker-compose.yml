@@ -39,7 +39,7 @@ services:
       dockerfile: ./Dockerfile
     container_name: foliar-prod
     ports:
-      - "5001:5000"
+      - "5002:5000"
     environment:
       - ANTHROPIC_API_KEY=sk-ant-placeholder
       - FLASK_SECRET_KEY=1c5cbdba8d1ff68868aa990dbadf0e4645f3cbd157bd8a861d3ada3c651fea39
@@ -63,7 +63,7 @@ services:
       dockerfile: ./Dockerfile
     container_name: maestro-prod
     ports:
-      - "8001:8000"
+      - "8002:8000"
     environment:
       - ANTHROPIC_API_KEY=sk-ant-placeholder
       - JWT_SECRET=997190c7d5657240e0e4bcaf3d9ccb1eead20c850b61debbf826b729ee286ad
