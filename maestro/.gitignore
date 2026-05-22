@@ -1,0 +1,54 @@
+# ================================================================
+# MAESTRO — .gitignore (whitelist)
+# El repositorio raíz es el escritorio, con muchos archivos
+# no relacionados. Excluimos todo y sólo incluimos MAESTRO.
+# ================================================================
+
+# 1. Excluir absolutamente todo
+*
+
+# 2. Preservar archivos de configuración del repo
+!.gitignore
+!.env.example
+!CLAUDE.md
+
+# 3. Carpeta frontend (todo incluido)
+!frontend/
+!frontend/**
+
+# 4. Carpeta backend (con excepciones abajo)
+!backend/
+!backend/**
+
+# 5. Scripts de despliegue al VPS
+!subir_backend.py
+!subir_frontend.py
+
+# ================================================================
+# Re-excluir archivos sensibles o generados DENTRO de lo incluido
+# ================================================================
+
+# Secrets — NUNCA subir
+backend/.env
+credenciales.json
+
+# Base de datos de usuario
+backend/*.db
+backend/*.db-shm
+backend/*.db-wal
+
+# Entorno virtual Python
+backend/venv/
+backend/.venv/
+
+# Archivos subidos por usuarios
+backend/uploads/
+
+# Cache Python
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+
+# Logs
+**/*.log

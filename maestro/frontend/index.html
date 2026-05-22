@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MAESTRO — Project Manager + Agente IA</title>
+
+  <base href="/app/" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%237c3aed'/%3E%3Cpath d='M5 25V7l11 11L27 7v18' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="styles.css" />
+
+  <style>
+    .toast {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      box-shadow: var(--shadow-md);
+      padding: 10px 16px;
+      font-size: 13.5px;
+      font-weight: 500;
+      animation: bobUp 220ms var(--ease);
+      pointer-events: auto;
+      max-width: 320px;
+    }
+    .toast[data-kind="warning"] { border-left: 3px solid var(--warning); }
+    .toast[data-kind="error"]   { border-left: 3px solid var(--danger); }
+    .toast[data-kind="success"] { border-left: 3px solid var(--success); }
+  </style>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+
+  <!--
+    CONFIG: URL base del backend. La autenticación es por JWT (manejado automáticamente).
+    Cambiar API_BASE si el backend corre en otro host/puerto.
+  -->
+  <script>
+    window.MAESTRO_CONFIG = {
+      API_BASE: window.location.origin,
+    };
+  </script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel" src="tweaks-panel.jsx?v=15"></script>
+  <script type="text/babel" src="icons.jsx?v=15"></script>
+  <script type="text/babel" src="data.jsx?v=29"></script>
+  <script type="text/babel" src="dashboard.jsx?v=28"></script>
+  <script type="text/babel" src="chat.jsx?v=15"></script>
+  <script type="text/babel" src="drawer-login.jsx?v=22"></script>
+  <script type="text/babel" src="sections.jsx?v=33"></script>
+  <script type="text/babel" src="project-detail.jsx?v=30"></script>
+  <script type="text/babel" src="app.jsx?v=28"></script>
+</body>
+</html>
