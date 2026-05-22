@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # ============================================================================
   # PostgreSQL - Base de datos compartida
@@ -47,7 +45,7 @@ services:
   foliar:
     build:
       context: ./foliar
-      dockerfile: Dockerfile
+      dockerfile: ./Dockerfile
     container_name: foliar-prod
     ports:
       - "5001:5000"
@@ -74,7 +72,7 @@ services:
   maestro:
     build:
       context: ./maestro
-      dockerfile: Dockerfile
+      dockerfile: ./Dockerfile
     container_name: maestro-prod
     ports:
       - "8000:8000"
