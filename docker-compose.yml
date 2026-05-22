@@ -43,7 +43,7 @@ services:
     environment:
       - ANTHROPIC_API_KEY=sk-ant-placeholder
       - FLASK_SECRET_KEY=1c5cbdba8d1ff68868aa990dbadf0e4645f3cbd157bd8a861d3ada3c651fea39
-      - DATABASE_URL=postgresql://admin:Postgres@2024!Secure#123@postgres:5432/foliar
+      - DATABASE_URL=postgresql://admin:Postgres%402024%21Secure%23123@postgres:5432/maestro
       - FLASK_ENV=production
       - FOLIAR_ENV=production
     volumes:
