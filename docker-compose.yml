@@ -1,13 +1,10 @@
 services:
-  # ============================================================================
-  # PostgreSQL - Base de datos compartida
-  # ============================================================================
   postgres:
     image: postgres:15-alpine
     container_name: postgres-prod
     environment:
       POSTGRES_USER: admin
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_PASSWORD: Postgres@2024!Secure#123
       POSTGRES_INITDB_ARGS: "--encoding=UTF8"
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -22,9 +19,6 @@ services:
     networks:
       - app-network
 
-  # ============================================================================
-  # Redis - Caché y queue
-  # ============================================================================
   redis:
     image: redis:7-alpine
     container_name: redis-prod
@@ -39,9 +33,6 @@ services:
     networks:
       - app-network
 
-  # ============================================================================
-  # FOLIAR - Generador de documentos (Flask)
-  # ============================================================================
   foliar:
     build:
       context: ./foliar
@@ -50,9 +41,9 @@ services:
     ports:
       - "5001:5000"
     environment:
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      - FLASK_SECRET_KEY=${FLASK_SECRET_KEY}
-      - DATABASE_URL=postgresql://admin:${DB_PASSWORD}@postgres:5432/foliar
+      - ANTHROPIC_API_KEY=sk-ant-placeholder
+      - FLASK_SECRET_KEY=1c5cbdba8d1ff68868aa990dbadf0e4645f3cbd157bd8a861d3ada3c651fea39
+      - DATABASE_URL=postgresql://admin:Postgres@2024!Secure#123@postgres:5432/foliar
       - FLASK_ENV=production
       - FOLIAR_ENV=production
     volumes:
@@ -66,20 +57,17 @@ services:
     networks:
       - app-network
 
-  # ============================================================================
-  # MAESTRO - Agente de organización (FastAPI)
-  # ============================================================================
   maestro:
     build:
       context: ./maestro
       dockerfile: ./Dockerfile
     container_name: maestro-prod
     ports:
-      - "8000:8000"
+      - "8001:8000"
     environment:
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      - JWT_SECRET=${JWT_SECRET}
-      - DATABASE_URL=postgresql://admin:${DB_PASSWORD}@postgres:5432/maestro
+      - ANTHROPIC_API_KEY=sk-ant-placeholder
+      - JWT_SECRET=997190c7d5657240e0e4bcaf3d9ccb1eead20c850b61debbf826b729ee286ad
+      - DATABASE_URL=postgresql://admin:Postgres@2024!Secure#123@postgres:5432/maestro
       - REDIS_URL=redis://redis:6379/0
       - ENVIRONMENT=production
       - IS_PRODUCTION=true
@@ -96,9 +84,6 @@ services:
     networks:
       - app-network
 
-  # ============================================================================
-  # Nginx - Reverse proxy
-  # ============================================================================
   nginx:
     image: nginx:alpine
     container_name: nginx-prod
@@ -115,16 +100,10 @@ services:
     networks:
       - app-network
 
-# ============================================================================
-# Volúmenes
-# ============================================================================
 volumes:
   postgres_data:
     driver: local
 
-# ============================================================================
-# Networks
-# ============================================================================
 networks:
   app-network:
     driver: bridge
